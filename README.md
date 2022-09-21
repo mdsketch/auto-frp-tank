@@ -1,2 +1,2 @@
 # auto-frp-tank
-Hey
+Din sucks
