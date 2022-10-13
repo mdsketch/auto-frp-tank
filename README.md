@@ -1,2 +1,2 @@
 # auto-frp-tank
-Din sucks
+This is the Readme for AUTOFRP
