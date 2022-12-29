@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import PySimpleGUI as sg
 from PIL import Image, ImageTk
-import io, os
-from connectors.solidworks import newDoc, closeDoc
+import io
+import os
+from connectors.solidworks import newDoc, closeDoc, createCylinder
 
 
 def get_img_data(f, maxsize=(1200, 850), first=False):
@@ -48,12 +49,14 @@ def app():
         [sg.Text('Radius (m):'), sg.Spin(
             values=[i for i in range(0, 1000)], initial_value=100, key='radius', expand_x=True)],
         [sg.Text('Height (m):'), sg.Spin(
-            values=[i for i in range(0, 1000)], initial_value=100, key='height', expand_x=True)]
+            values=[i for i in range(0, 1000)], initial_value=100, key='height', expand_x=True)],
+        [sg.Text('Save Tank As:'), sg.Input(key='save_as',
+                                                expand_x=True, default_text='auto_frp_tank.prtdot')]
     ], pad=(0, 0))
 
     col3 = sg.Column([[sg.Frame('Actions:',
-                                [[sg.Column([[sg.Button('Save'), sg.Button('Clear'), sg.Button('Delete'), ]],
-                                            size=(450, 45), pad=(0, 0))]])]], pad=(0, 0))
+                                [[sg.Column([[sg.Button('Go'), sg.Button('Clear'), sg.Button('Delete'), ]],
+                                            pad=(0, 0))]])]], pad=(0, 0))
 
     # The final layout is a simple one
     layout = [[sg.Menu(menu_def, font='_ 12', key='-MENUBAR-')], [col1, col2],
@@ -61,8 +64,7 @@ def app():
 
     window = sg.Window("Auto FRP Tank",
                        layout,
-                       default_element_size=(12, 1),
-                       default_button_element_size=(12, 1),
+                       resizable=True,
                        right_click_menu=right_click_menu)
 
     # ------ Loop & Process button menu choices ------ #
@@ -84,9 +86,11 @@ def app():
             print('Starting SolidWorks')
             os.popen('"C:/Program Files/SOLIDWORKS Corp/SOLIDWORKS/SLDWORKS.exe"')
         elif event == 'New Document':
-           newDoc()
+            newDoc()
         elif event == 'Close Document':
             closeDoc()
+        elif event == 'Go':
+            createCylinder(float(window.find_element('radius').get()), float(window.find_element('height').get())) 
 
     window.close()
 
