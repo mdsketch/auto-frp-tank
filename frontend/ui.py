@@ -31,7 +31,7 @@ def test_menus():
         'Right', '!&Click', '&Menu', 'E&xit', 'Properties']]
 
 
-    image_elem = sg.Image(data=get_img_data("C:/Users/MatthewDraws/Pictures/20210914_103416.jpg", first=True))
+    image_elem = sg.Image(data=get_img_data("C:/Users/draws/Pictures/mountain-lake-landscape-trees-1034377.jpg", first=True))
 
 
     # ------ GUI Defintion ------ #
