@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import PySimpleGUI as sg
 from PIL import Image, ImageTk
-import io
+import io, os
+from connectors.solidworks import newDoc, closeDoc
+
 
 def get_img_data(f, maxsize=(1200, 850), first=False):
     """Generate image data using PIL
@@ -15,7 +17,8 @@ def get_img_data(f, maxsize=(1200, 850), first=False):
         return bio.getvalue()
     return ImageTk.PhotoImage(img)
 
-def test_menus():
+
+def app():
     sg.theme('LightGrey1')
     sg.set_options(element_padding=(0, 0))
 
@@ -24,55 +27,28 @@ def test_menus():
         ['&File', ['&Open     Ctrl-O', '&Save       Ctrl-S', '&Properties', 'E&xit']],
         ['&Edit', ['&Paste', ['Special', 'Normal', ],
                    'Undo', 'Options::this_is_a_menu_key'], ],
+        ['SolidWorks', ['Start SolidWorks', 'New Document', 'Close Document']],
         ['&Help', ['&About...']]
     ]
 
     right_click_menu = ['Unused', [
         'Right', '!&Click', '&Menu', 'E&xit', 'Properties']]
 
-
-    image_elem = sg.Image(data=get_img_data("C:/Users/draws/Pictures/mountain-lake-landscape-trees-1034377.jpg", first=True))
-
+    image_elem = sg.Image(data=get_img_data(
+        "C:/Users/draws/Pictures/mountain-lake-landscape-trees-1034377.jpg", first=True))
 
     # ------ GUI Defintion ------ #
     col2 = sg.Column(
         [[sg.Frame('Tank:', [[sg.Column([[image_elem]])]])]])
 
     col1 = sg.Column([
+        # title
         [sg.Text('Auto FRP Tank Calculator',
                  size=(30, 1), font=("Helvetica", 25))],
-        [sg.Text('Here is some text.... and a place to enter text')],
-        [sg.InputText('This is my text', key='in1')],
-        [sg.CBox('Checkbox', key='cb1'), sg.CBox(
-            'My second checkbox!', key='cb2', default=True)],
-        [sg.Radio('My first Radio!     ', "RADIO1", key='rad1', default=True),
-         sg.Radio('My second Radio!', "RADIO1", key='rad2')],
-        [sg.MLine(default_text='This is the default Text should you decide not to type anything', size=(35, 3),
-                  key='multi1'),
-         sg.MLine(default_text='A second multi-line', size=(35, 3), key='multi2')],
-        [sg.Combo(('Combobox 1', 'Combobox 2'), key='combo', size=(20, 1)),
-         sg.Slider(range=(1, 100), orientation='h', size=(34, 20), key='slide1', default_value=85)],
-        [sg.OptionMenu(('Menu Option 1', 'Menu Option 2',
-                        'Menu Option 3'), key='optionmenu')],
-        [sg.Listbox(values=('Listbox 1', 'Listbox 2', 'Listbox 3'), size=(30, 3), key='listbox'),
-         sg.Slider(range=(1, 100),
-                   orientation='v',
-                   size=(5, 20),
-                   default_value=25, key='slide2', ),
-         sg.Slider(range=(1, 100),
-                   orientation='v',
-                   size=(5, 20),
-                   default_value=75, key='slide3', ),
-         sg.Slider(range=(1, 100),
-                   orientation='v',
-                   size=(5, 20),
-                   default_value=10, key='slide4')],
-        [sg.Text('_' * 80)],
-        [sg.Text('Choose A Folder', size=(35, 1))],
-        [sg.Text('Your Folder', size=(15, 1), justification='right'),
-         sg.InputText('Default Folder', key='folder'), sg.FolderBrowse()],
-        [sg.Button('Exit'),
-         sg.Text(' ' * 40), sg.Button('SaveSettings'), sg.Button('LoadSettings')]
+        [sg.Text('Radius (m):'), sg.Spin(
+            values=[i for i in range(0, 1000)], initial_value=100, key='radius', expand_x=True)],
+        [sg.Text('Height (m):'), sg.Spin(
+            values=[i for i in range(0, 1000)], initial_value=100, key='height', expand_x=True)]
     ], pad=(0, 0))
 
     col3 = sg.Column([[sg.Frame('Actions:',
@@ -80,7 +56,7 @@ def test_menus():
                                             size=(450, 45), pad=(0, 0))]])]], pad=(0, 0))
 
     # The final layout is a simple one
-    layout = [[sg.Menu(menu_def, tearoff=True, font='_ 12', key='-MENUBAR-')], [col1, col2],
+    layout = [[sg.Menu(menu_def, font='_ 12', key='-MENUBAR-')], [col1, col2],
               [col3]]
 
     window = sg.Window("Auto FRP Tank",
@@ -104,8 +80,15 @@ def test_menus():
         elif event == 'Open':
             filename = sg.popup_get_file('file to open', no_window=True)
             print(filename)
+        elif event == 'Start SolidWorks':
+            print('Starting SolidWorks')
+            os.popen('"C:/Program Files/SOLIDWORKS Corp/SOLIDWORKS/SLDWORKS.exe"')
+        elif event == 'New Document':
+           newDoc()
+        elif event == 'Close Document':
+            closeDoc()
 
     window.close()
 
 
-test_menus()
+app()
