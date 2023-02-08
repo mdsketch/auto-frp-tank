@@ -3,7 +3,8 @@ import PySimpleGUI as sg
 from PIL import Image, ImageTk
 import io
 import os
-from connectors.solidworks import newDoc, closeDoc, createCylinder
+from connectors.solidworks import newDoc, closeDoc, createCylinder, setPreferences, openDoc
+from connectors.excel import updateValues
 
 
 def get_img_data(f, maxsize=(1200, 850), first=False):
@@ -28,7 +29,8 @@ def app():
         ['&File', ['&Open     Ctrl-O', '&Save       Ctrl-S', '&Properties', 'E&xit']],
         ['&Edit', ['&Paste', ['Special', 'Normal', ],
                    'Undo', 'Options::this_is_a_menu_key'], ],
-        ['SolidWorks', ['Start SolidWorks', 'New Document', 'Close Document']],
+        ['SolidWorks', ['Start SolidWorks', 'New Document',
+                        'Close Document', 'Set Preferences']],
         ['&Help', ['&About...']]
     ]
 
@@ -41,15 +43,15 @@ def app():
     # ------ GUI Defintion ------ #
     col2 = sg.Column(
         [[sg.Frame('Tank:', [[sg.Column([[image_elem]])]])]])
-
+    # Tank’s height should be a Dropdown with 4000 6000 8000 and 10000
     col1 = sg.Column([
         # title
         [sg.Text('Auto FRP Tank Calculator',
                  size=(30, 1), font=("Helvetica", 25))],
         [sg.Text('Radius (m):'), sg.Spin(
-            values=[i for i in range(0, 1000)], initial_value=100, key='radius', expand_x=True)],
-        [sg.Text('Height (m):'), sg.Spin(
-            values=[i for i in range(0, 1000)], initial_value=100, key='height', expand_x=True)],
+            values=[i for i in range(0, 1000)], initial_value=350, key='radius', expand_x=True)],
+        [sg.Text('Height (cm):'), sg.Combo(
+            values=[i for i in range(4000, 10000, 2000)], default_value=6000, key='height', expand_x=True)],
         [sg.Text('Save Tank As:'), sg.Input(key='save_as',
                                                 expand_x=True, default_text='auto_frp_tank.prtdot')]
     ], pad=(0, 0))
@@ -90,7 +92,20 @@ def app():
         elif event == 'Close Document':
             closeDoc()
         elif event == 'Go':
-            createCylinder(float(window.find_element('radius').get()), float(window.find_element('height').get())) 
+            #createCylinder(float(window.find_element('radius').get()), float(window.find_element('height').get()))
+            # update preferences to automatically use excel values
+            previousPreference = setPreferences(2)
+            # update excel values
+            updateValues(float(window.find_element('radius').get()), float(
+                window.find_element('height').get()), 100, 100, 750, 400)
+            # open part
+            openDoc('C:/autofrp/Part1.SLDPRT')
+            # revert to previous preference
+            setPreferences(previousPreference)
+        elif event == 'Clear':
+            closeDoc()
+        elif event == 'Set Preferences':
+            setPreferences(2)
 
     window.close()
 

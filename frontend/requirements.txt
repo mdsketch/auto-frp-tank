@@ -1,3 +1,4 @@
 PySimpleGUI
 Image
 pywin32
+openpyxl
