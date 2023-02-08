@@ -44,17 +44,34 @@ def app():
     col2 = sg.Column(
         [[sg.Frame('Tank:', [[sg.Column([[image_elem]])]])]])
     # Tank’s height should be a Dropdown with 4000 6000 8000 and 10000
-    col1 = sg.Column([
+    col1 = sg.Column([[sg.Frame('Input:', [
         # title
-        [sg.Text('Auto FRP Tank Calculator',
-                 size=(30, 1), font=("Helvetica", 25))],
-        [sg.Text('Radius (m):'), sg.Spin(
-            values=[i for i in range(0, 1000)], initial_value=350, key='radius', expand_x=True)],
-        [sg.Text('Height (cm):'), sg.Combo(
-            values=[i for i in range(4000, 10000, 2000)], default_value=6000, key='height', expand_x=True)],
-        [sg.Text('Save Tank As:'), sg.Input(key='save_as',
-                                                expand_x=True, default_text='auto_frp_tank.prtdot')]
-    ], pad=(0, 0))
+        [sg.Text('Dimensions:', pad=(10, (10, 3)), font=("Helvetica 12 underline"))],
+        [sg.Text('Radius (cm):', pad=(10, 3)), sg.Combo(
+            values=[i for i in range(300, 600, 50)], default_value=350, key='height', size=(5, 20))],
+        [sg.Text('Height (cm):', pad=(10, 3)), sg.Combo(
+            values=[i for i in range(4000, 10000, 2000)], default_value=6000, key='height', size=(5, 20))],
+        [sg.Text('Tank Type:', pad=(10, 3)), sg.Combo(
+            values=['FRP', 'Dual Laminate'], default_value='FRP', key='tank_type', size=(20, 20))],
+        [sg.Text('Ignore Corrosion Barrier:', pad=(10, 3)), sg.Checkbox(
+            '', key='corrosion', default=False)],
+        [sg.Text('Internal Pressure (psi):', pad=(10, 3)), sg.Spin(
+            values=[i for i in range(0, 15, 1)], initial_value=0, key='internal_pressure', size=(5, 20))],
+        [sg.Text('External Pressure (psi):', pad=(10, 3)), sg.Spin(
+            values=[i for i in range(0, 15, 1)], initial_value=0, key='external_pressure', size=(5, 20))],
+        [sg.Text('Top Head:', pad=(10, (10, 3)), font=("Helvetica 12 underline"))],
+        [sg.Text('Type:', pad=(10, 3)), sg.Combo(
+            values=['Torispherical', 'Ellipsoidal', 'Flat'], default_value='Flat', key='top_head', size=(20, 20))],
+        [sg.Text('Live load (kN/m2):', pad=(10, 3)), sg.Spin(
+            values=[i for i in range(0, 100, 1)], initial_value=0, key='live_load', size=(5, 20))],
+        [sg.Text('Dead load (kN/m2):', pad=(10, 3)), sg.Spin(
+            values=[i for i in range(0, 100, 1)], initial_value=0, key='dead_load', size=(5, 20))],
+            
+        
+
+        [sg.Text('Save Tank As:', pad=(10, 3)), sg.Input(key='save_as',
+                                                         expand_x=True, default_text='auto_frp_tank.prtdot')]
+    ])]], pad=(10, 10))
 
     col3 = sg.Column([[sg.Frame('Actions:',
                                 [[sg.Column([[sg.Button('Go'), sg.Button('Clear'), sg.Button('Delete'), ]],
