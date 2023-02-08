@@ -3,11 +3,11 @@ import PySimpleGUI as sg
 from PIL import Image, ImageTk
 import io
 import os
-from connectors.solidworks import newDoc, closeDoc, createCylinder, setPreferences, openDoc
+from connectors.solidworks import newDoc, closeDoc, createCylinder, setPreferences, openDoc, saveImage
 from connectors.excel import updateValues
 
 
-def get_img_data(f, maxsize=(1200, 850), first=False):
+def get_img_data(f, maxsize=(800, 800), first=False):
     """Generate image data using PIL
     """
     img = Image.open(f)
@@ -38,7 +38,7 @@ def app():
         'Right', '!&Click', '&Menu', 'E&xit', 'Properties']]
 
     image_elem = sg.Image(data=get_img_data(
-        "C:/Users/draws/Pictures/mountain-lake-landscape-trees-1034377.jpg", first=True))
+        "C:/autofrp/solidworx.jpg", first=True))
 
     # ------ GUI Defintion ------ #
     col2 = sg.Column(
@@ -46,9 +46,10 @@ def app():
     # Tank’s height should be a Dropdown with 4000 6000 8000 and 10000
     col1 = sg.Column([[sg.Frame('Input:', [
         # title
-        [sg.Text('Dimensions:', pad=(10, (10, 3)), font=("Helvetica 12 underline"))],
+        [sg.Text('Dimensions:', pad=(10, (10, 3)),
+                 font=("Helvetica 12 underline"))],
         [sg.Text('Radius (cm):', pad=(10, 3)), sg.Combo(
-            values=[i for i in range(300, 600, 50)], default_value=350, key='height', size=(5, 20))],
+            values=[i for i in range(300, 600, 50)], default_value=350, key='radius', size=(5, 20))],
         [sg.Text('Height (cm):', pad=(10, 3)), sg.Combo(
             values=[i for i in range(4000, 10000, 2000)], default_value=6000, key='height', size=(5, 20))],
         [sg.Text('Tank Type:', pad=(10, 3)), sg.Combo(
@@ -59,15 +60,16 @@ def app():
             values=[i for i in range(0, 15, 1)], initial_value=0, key='internal_pressure', size=(5, 20))],
         [sg.Text('External Pressure (psi):', pad=(10, 3)), sg.Spin(
             values=[i for i in range(0, 15, 1)], initial_value=0, key='external_pressure', size=(5, 20))],
-        [sg.Text('Top Head:', pad=(10, (10, 3)), font=("Helvetica 12 underline"))],
+        [sg.Text('Top Head:', pad=(10, (10, 3)),
+                 font=("Helvetica 12 underline"))],
         [sg.Text('Type:', pad=(10, 3)), sg.Combo(
             values=['Torispherical', 'Ellipsoidal', 'Flat'], default_value='Flat', key='top_head', size=(20, 20))],
         [sg.Text('Live load (kN/m2):', pad=(10, 3)), sg.Spin(
             values=[i for i in range(0, 100, 1)], initial_value=0, key='live_load', size=(5, 20))],
         [sg.Text('Dead load (kN/m2):', pad=(10, 3)), sg.Spin(
             values=[i for i in range(0, 100, 1)], initial_value=0, key='dead_load', size=(5, 20))],
-            
-        
+
+
 
         [sg.Text('Save Tank As:', pad=(10, 3)), sg.Input(key='save_as',
                                                          expand_x=True, default_text='auto_frp_tank.prtdot')]
@@ -109,7 +111,7 @@ def app():
         elif event == 'Close Document':
             closeDoc()
         elif event == 'Go':
-            #createCylinder(float(window.find_element('radius').get()), float(window.find_element('height').get()))
+            # createCylinder(float(window.find_element('radius').get()), float(window.find_element('height').get()))
             # update preferences to automatically use excel values
             previousPreference = setPreferences(2)
             # update excel values
@@ -119,6 +121,10 @@ def app():
             openDoc('C:/autofrp/Part1.SLDPRT')
             # revert to previous preference
             setPreferences(previousPreference)
+            saveImage()
+            # set 'C:\\autofrp\\doc1.png' as image
+            image_elem.update(data=get_img_data(
+                "C:/autofrp/doc1.png", first=False))
         elif event == 'Clear':
             closeDoc()
         elif event == 'Set Preferences':

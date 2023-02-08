@@ -25,11 +25,18 @@ def newDoc():
     Create a new document
     """
     swApp = connect()
-    path = 'C:\\Users\\draws\\Documents\\auto-frp-tank\\test.prtdot'
+    path = 'C:\\autofrp\\doc1.prtdot'
     swApp.NewDocument('C:\\ProgramData\\SolidWorks\\SOLIDWORKS 2022\\templates\\Part.prtdot', 0, 0, 0)
     # 2 => rebuild activated doc
     swDoc = swApp.ActivateDoc3(path, False, 2, VARIANT_16387)
 
+def saveImage():
+    """
+    Save active document as PNG image
+    """
+    swApp = connect()
+    swDoc = swApp.ActiveDoc
+    swDoc.SaveAs3('C:\\autofrp\\doc1.png', 0, 2)
 
 def openDoc(path):
     """
