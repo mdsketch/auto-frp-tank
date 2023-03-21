@@ -52,9 +52,12 @@ def app():
             [sg.Text('Tank Height (cm):', pad=(10, 3)), sg.Combo(
                 values=[i for i in range(4000, 10000, 2000)], default_value=6000, key='height', size=(5, 20))],
             [sg.Text('Storage Type:', pad=(10, 3)), sg.Combo(
-                values=['Liquid', 'Gas'], default_value='Gas', key='tank_type', size=(10, 20), enable_events=True),
-             sg.Text('Specific Gravity:', pad=(10, 3), visible=False, key='specific_gravity_text'), sg.Combo(
-                values=[i for i in range(1, 10, 1)], default_value=1, key='specific_gravity', size=(5, 20), visible=False)],
+                values=['Liquid', 'Gas'], default_value='Gas', key='storage_type', size=(10, 20), enable_events=True),
+             sg.Text('Specific Gravity:', pad=(10, 3), key='specific_gravity_text'), sg.Combo(
+                values=[i for i in range(1, 10, 1)], default_value=1, key='specific_gravity', size=(5, 20), disabled=True)],
+            [sg.Text('Tensile Operating Force:', pad=(10, 3)), sg.Checkbox(
+                '', key='tensile_force', enable_events=True), sg.Spin(
+                values=[i for i in range(0, 15, 1)], initial_value=0, key='tensile_force_value', size=(5, 20), disabled=True)],
             [sg.Text('Ignore Corrosion Barrier:', pad=(10, 3)), sg.Checkbox(
                 '', key='corrosion', default=False)],
             [sg.Text('Internal Pressure (psi):', pad=(10, 3)), sg.Spin(
@@ -75,18 +78,44 @@ def app():
 
     # Environment tab
     environment = [[sg.Text('Compressive Operating Force:', pad=(10, 3)), sg.Spin(
-        values=[i for i in range(0, 15, 1)], initial_value=0, key='internal_pressure', size=(5, 20))],
+        values=[i for i in range(0, 15, 1)], initial_value=0, key='compressive_force', size=(5, 20))],
+        [sg.Text('Snow Pressure:', pad=(10, 3)), sg.Checkbox(
+            '', key='snow', default=False, enable_events=True),
+         sg.Spin(
+            values=[i for i in range(0, 15, 1)], initial_value=0, key='snow_pressure', size=(5, 20), disabled=True)],
+        [sg.Text('Wind Speed:', pad=(10, 3)), sg.Checkbox(
+            '', key='wind', default=False, enable_events=True),
+         sg.Spin(
+            values=[i for i in range(0, 15, 1)], initial_value=0, key='wind_speed', size=(5, 20), disabled=True)],
+        [sg.Text('Seismic:', pad=(10, 3)), sg.Checkbox(
+            '', key='seismic', default=False, enable_events=True), sg.Combo(
+            values=['Ss', 'S1', 'Fa', 'Fv', 'TL'], default_value='Ss', key='seismic_type', size=(5, 20), disabled=True)],
+    ]
+
+    # Tank Type
+    tank_type = [[sg.Text('Tank Type:', pad=(10, 3)), sg.Combo(
+        values=['FRP', 'Dual Laminate'], default_value='FRP', key='tank_type', size=(20, 20), enable_events=True)],
+        [sg.Text('Ignore Corrosion Barrier:', pad=(10, 3)), sg.Checkbox(
+            '', key='corrosion_barrier', default=True, enable_events=True)],
+        [sg.Text('Corrosion Barrier Thickness (cm):', pad=(10, 3)), sg.Spin(
+            values=[i for i in range(0, 15, 1)], initial_value=0, key='corrosion_barrier_thickness', size=(5, 20), disabled=True)],
+        [sg.Text('Corrosion Liner Thickness (cm):', pad=(10, 3)), sg.Spin(
+            values=[i for i in range(0, 15, 1)], initial_value=0, key='corrosion_liner_thickness', size=(5, 20), disabled=True)],
+
     ]
 
     actions = sg.Column([[sg.Frame('Actions:',
-                                [[sg.Column([[sg.Button('Go'), sg.Button('Clear'), sg.Button('Delete'), ]],
-                                            pad=(0, 0))]])]], pad=(0, 0))
+                                   [[sg.Column([[sg.Button('Go'), sg.Button('Clear'), sg.Button('Delete'), ]],
+                                               pad=(0, 0))]])]], pad=(0, 0))
 
     # The final layout is a simple one
     layout = [
         [sg.Menu(menu_def, font='_ 12', key='-MENUBAR-')], [[sg.TabGroup([[sg.Tab('Tank', tank),
-                              sg.Tab('Environment', environment)
-                              ]], key='-TAB GROUP-', expand_x=True, expand_y=True),]], [actions], [image]]
+                                                                           sg.Tab(
+                                                                               'Environment', environment),
+                                                                           sg.Tab(
+                                                                               'Tank Type', tank_type),
+                                                                           ]], key='-TAB GROUP-', expand_x=True, expand_y=True),]], [actions], [image]]
     window = sg.Window("Auto FRP Tank",
                        layout,
                        resizable=True,
@@ -133,16 +162,57 @@ def app():
             closeDoc()
         elif event == 'Set Preferences':
             setPreferences(2)
-        elif event == 'tank_type':
-            if values['tank_type'] == 'Liquid':
-                window.find_element(
-                    'specific_gravity_text').update(visible=True)
-                window.find_element('specific_gravity').update(visible=True)
+        elif event == 'storage_type':
+            if values['storage_type'] == 'Liquid':
+                window.find_element('specific_gravity').update(disabled=False)
             else:
-                window.find_element(
-                    'specific_gravity_text').update(visible=False)
-                window.find_element('specific_gravity').update(visible=False)
-
+                window.find_element('specific_gravity').update(disabled=True)
+        elif event == 'snow':
+            if values['snow']:
+                window.find_element('snow_pressure').update(disabled=False)
+            else:
+                window.find_element('snow_pressure').update(disabled=True)
+        elif event == 'wind':
+            if values['wind']:
+                window.find_element('wind_speed').update(disabled=False)
+            else:
+                window.find_element('wind_speed').update(disabled=True)
+        elif event == 'seismic':
+            if values['seismic']:
+                window.find_element('seismic_type').update(disabled=False)
+            else:
+                window.find_element('seismic_type').update(disabled=True)
+        elif event == 'tensile_force':
+            if values['tensile_force']:
+                window.find_element('tensile_force_value').update(
+                    disabled=False)
+            else:
+                window.find_element('tensile_force_value').update(
+                    disabled=True)
+        elif event == 'corrosion_barrier':
+            if values['corrosion_barrier']:
+                window.find_element('corrosion_barrier_thickness').update(
+                    disabled=True)
+                window.find_element('corrosion_liner_thickness').update(
+                    disabled=True)
+            else:
+                window.find_element('corrosion_barrier_thickness').update(
+                    disabled=False)
+                if values['tank_type'] == 'Dual Laminate':
+                    window.find_element('corrosion_liner_thickness').update(
+                        disabled=False)
+                else:
+                    window.find_element('corrosion_liner_thickness').update(
+                        disabled=True)
+        elif event == 'tank_type':
+            if (not values['corrosion_barrier']):
+                if values['tank_type'] == 'Dual Laminate':
+                    window.find_element('corrosion_liner_thickness').update(
+                        disabled=False)
+                else:
+                    window.find_element('corrosion_liner_thickness').update(
+                        disabled=True)
+            
     window.close()
 
 
