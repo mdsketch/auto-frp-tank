@@ -64,14 +64,6 @@ def app():
                 values=[i for i in range(0, 15, 1)], initial_value=0, key='internal_pressure', size=(5, 20))],
             [sg.Text('External Pressure (psi):', pad=(10, 3)), sg.Spin(
                 values=[i for i in range(0, 15, 1)], initial_value=0, key='external_pressure', size=(5, 20))],
-            [sg.Text('Top Head:', pad=(10, (10, 3)),
-                     font=("Helvetica 12 underline"))],
-            [sg.Text('Type:', pad=(10, 3)), sg.Combo(
-                values=['Torispherical', 'Ellipsoidal', 'Flat'], default_value='Flat', key='top_head', size=(20, 20))],
-            [sg.Text('Live load (kN/m2):', pad=(10, 3)), sg.Spin(
-                values=[i for i in range(0, 100, 1)], initial_value=0, key='live_load', size=(5, 20))],
-            [sg.Text('Dead load (kN/m2):', pad=(10, 3)), sg.Spin(
-                values=[i for i in range(0, 100, 1)], initial_value=0, key='dead_load', size=(5, 20))],
             [sg.Text('Save Tank As:', pad=(10, 3)), sg.Input(key='save_as',
                                                              expand_x=True, default_text='auto_frp_tank.prtdot')]
             ]
@@ -101,8 +93,16 @@ def app():
             values=[i for i in range(0, 15, 1)], initial_value=0, key='corrosion_barrier_thickness', size=(5, 20), disabled=True)],
         [sg.Text('Corrosion Liner Thickness (cm):', pad=(10, 3)), sg.Spin(
             values=[i for i in range(0, 15, 1)], initial_value=0, key='corrosion_liner_thickness', size=(5, 20), disabled=True)],
-
     ]
+
+    # Top Head
+    top_head = [
+        [sg.Text('Type:', pad=(10, 3)), sg.Combo(
+            values=['Torispherical', 'Ellipsoidal', 'Flat'], default_value='Flat', key='top_head', size=(20, 20))],
+        [sg.Text('Live load (kN/m2):', pad=(10, 3)), sg.Spin(
+            values=[i for i in range(0, 100, 1)], initial_value=0, key='live_load', size=(5, 20))],
+        [sg.Text('Dead load (kN/m2):', pad=(10, 3)), sg.Spin(
+            values=[i for i in range(0, 100, 1)], initial_value=0, key='dead_load', size=(5, 20))],]
 
     actions = sg.Column([[sg.Frame('Actions:',
                                    [[sg.Column([[sg.Button('Go'), sg.Button('Clear'), sg.Button('Delete'), ]],
@@ -115,7 +115,9 @@ def app():
                                                                                'Environment', environment),
                                                                            sg.Tab(
                                                                                'Tank Type', tank_type),
-                                                                           ]], key='-TAB GROUP-', expand_x=True, expand_y=True),]], [actions], [image]]
+                                                                           sg.Tab(
+            'Top Head', top_head),
+        ]], key='-TAB GROUP-', expand_x=True, expand_y=True),]], [actions], [image]]
     window = sg.Window("Auto FRP Tank",
                        layout,
                        resizable=True,
@@ -212,7 +214,7 @@ def app():
                 else:
                     window.find_element('corrosion_liner_thickness').update(
                         disabled=True)
-            
+
     window.close()
 
 
