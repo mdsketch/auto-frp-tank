@@ -41,54 +41,58 @@ def app():
         "C:/autofrp/solidworx.jpg", first=True))
 
     # ------ GUI Defintion ------ #
-    col2 = sg.Column(
+    image = sg.Column(
         [[sg.Frame('Tank:', [[sg.Column([[image_elem]])]])]])
-    # Tank’s height should be a Dropdown with 4000 6000 8000 and 10000
-    col1 = sg.Column([[sg.Frame('Input:', [
-        # title
-        [sg.Text('Dimensions:', pad=(10, (10, 3)),
-                 font=("Helvetica 12 underline"))],
-        [sg.Text('Radius (cm):', pad=(10, 3)), sg.Combo(
-            values=[i for i in range(300, 600, 50)], default_value=350, key='radius', size=(5, 20))],
-        [sg.Text('Height (cm):', pad=(10, 3)), sg.Combo(
-            values=[i for i in range(4000, 10000, 2000)], default_value=6000, key='height', size=(5, 20))],
-        [sg.Text('Tank Type:', pad=(10, 3)), sg.Combo(
-            values=['FRP', 'Dual Laminate'], default_value='FRP', key='tank_type', size=(20, 20))],
-        [sg.Text('Ignore Corrosion Barrier:', pad=(10, 3)), sg.Checkbox(
-            '', key='corrosion', default=False)],
-        [sg.Text('Internal Pressure (psi):', pad=(10, 3)), sg.Spin(
-            values=[i for i in range(0, 15, 1)], initial_value=0, key='internal_pressure', size=(5, 20))],
-        [sg.Text('External Pressure (psi):', pad=(10, 3)), sg.Spin(
-            values=[i for i in range(0, 15, 1)], initial_value=0, key='external_pressure', size=(5, 20))],
-        [sg.Text('Top Head:', pad=(10, (10, 3)),
-                 font=("Helvetica 12 underline"))],
-        [sg.Text('Type:', pad=(10, 3)), sg.Combo(
-            values=['Torispherical', 'Ellipsoidal', 'Flat'], default_value='Flat', key='top_head', size=(20, 20))],
-        [sg.Text('Live load (kN/m2):', pad=(10, 3)), sg.Spin(
-            values=[i for i in range(0, 100, 1)], initial_value=0, key='live_load', size=(5, 20))],
-        [sg.Text('Dead load (kN/m2):', pad=(10, 3)), sg.Spin(
-            values=[i for i in range(0, 100, 1)], initial_value=0, key='dead_load', size=(5, 20))],
 
+    # Main tank tab
+    tank = [[sg.Text('Dimensions:', pad=(10, (10, 3)),
+                     font=("Helvetica 12 underline"))],
+            [sg.Text('Tank Internal Diameter (cm):', pad=(10, 3)), sg.Combo(
+                values=[i for i in range(300, 600, 50)], default_value=350, key='radius', size=(5, 20))],
+            [sg.Text('Tank Height (cm):', pad=(10, 3)), sg.Combo(
+                values=[i for i in range(4000, 10000, 2000)], default_value=6000, key='height', size=(5, 20))],
+            [sg.Text('Storage Type:', pad=(10, 3)), sg.Combo(
+                values=['Liquid', 'Gas'], default_value='Gas', key='tank_type', size=(10, 20), enable_events=True),
+             sg.Text('Specific Gravity:', pad=(10, 3), visible=False, key='specific_gravity_text'), sg.Combo(
+                values=[i for i in range(1, 10, 1)], default_value=1, key='specific_gravity', size=(5, 20), visible=False)],
+            [sg.Text('Ignore Corrosion Barrier:', pad=(10, 3)), sg.Checkbox(
+                '', key='corrosion', default=False)],
+            [sg.Text('Internal Pressure (psi):', pad=(10, 3)), sg.Spin(
+                values=[i for i in range(0, 15, 1)], initial_value=0, key='internal_pressure', size=(5, 20))],
+            [sg.Text('External Pressure (psi):', pad=(10, 3)), sg.Spin(
+                values=[i for i in range(0, 15, 1)], initial_value=0, key='external_pressure', size=(5, 20))],
+            [sg.Text('Top Head:', pad=(10, (10, 3)),
+                     font=("Helvetica 12 underline"))],
+            [sg.Text('Type:', pad=(10, 3)), sg.Combo(
+                values=['Torispherical', 'Ellipsoidal', 'Flat'], default_value='Flat', key='top_head', size=(20, 20))],
+            [sg.Text('Live load (kN/m2):', pad=(10, 3)), sg.Spin(
+                values=[i for i in range(0, 100, 1)], initial_value=0, key='live_load', size=(5, 20))],
+            [sg.Text('Dead load (kN/m2):', pad=(10, 3)), sg.Spin(
+                values=[i for i in range(0, 100, 1)], initial_value=0, key='dead_load', size=(5, 20))],
+            [sg.Text('Save Tank As:', pad=(10, 3)), sg.Input(key='save_as',
+                                                             expand_x=True, default_text='auto_frp_tank.prtdot')]
+            ]
 
+    # Environment tab
+    environment = [[sg.Text('Compressive Operating Force:', pad=(10, 3)), sg.Spin(
+        values=[i for i in range(0, 15, 1)], initial_value=0, key='internal_pressure', size=(5, 20))],
+    ]
 
-        [sg.Text('Save Tank As:', pad=(10, 3)), sg.Input(key='save_as',
-                                                         expand_x=True, default_text='auto_frp_tank.prtdot')]
-    ])]], pad=(10, 10))
-
-    col3 = sg.Column([[sg.Frame('Actions:',
+    actions = sg.Column([[sg.Frame('Actions:',
                                 [[sg.Column([[sg.Button('Go'), sg.Button('Clear'), sg.Button('Delete'), ]],
                                             pad=(0, 0))]])]], pad=(0, 0))
 
     # The final layout is a simple one
-    layout = [[sg.Menu(menu_def, font='_ 12', key='-MENUBAR-')], [col1, col2],
-              [col3]]
-
+    layout = [
+        [sg.Menu(menu_def, font='_ 12', key='-MENUBAR-')], [[sg.TabGroup([[sg.Tab('Tank', tank),
+                              sg.Tab('Environment', environment)
+                              ]], key='-TAB GROUP-', expand_x=True, expand_y=True),]], [actions], [image]]
     window = sg.Window("Auto FRP Tank",
                        layout,
                        resizable=True,
                        right_click_menu=right_click_menu)
 
-    # ------ Loop & Process button menu choices ------ #
+   # ------ Loop & Process button menu choices ------ #
     while True:
         event, values = window.read()
         if event in (sg.WIN_CLOSED, 'Exit'):
@@ -129,6 +133,15 @@ def app():
             closeDoc()
         elif event == 'Set Preferences':
             setPreferences(2)
+        elif event == 'tank_type':
+            if values['tank_type'] == 'Liquid':
+                window.find_element(
+                    'specific_gravity_text').update(visible=True)
+                window.find_element('specific_gravity').update(visible=True)
+            else:
+                window.find_element(
+                    'specific_gravity_text').update(visible=False)
+                window.find_element('specific_gravity').update(visible=False)
 
     window.close()
 
