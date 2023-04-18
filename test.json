@@ -23,5 +23,10 @@
     "corrosion_liner_thickness": 0,
     "top_head": "Flat",
     "live_load": 0,
-    "dead_load": 0
+    "dead_load": 0,
+    "shell": "Hand Lay-Up",
+    "hoop_tensile_modulus": 0,
+    "hoop_tensile_strength": 0,
+    "axial_tensile_modulus": 0,
+    "axial_tensile_strength": 0
 }

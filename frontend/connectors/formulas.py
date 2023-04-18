@@ -27,7 +27,7 @@ def calculateTank(tank):
         t1 = tensileForceThickness(tank['operating_moment'], tank['diameter'],
                                    tank['tensile_force_value'], tank['internal_pressure'])
         t2 = operatingCompressiveForceThickness(tank['operating_moment'], tank['wind_moment'], tank['diameter'],
-                                                tank['operating_compressive_force'], tank['wind_compressive_force'], tank['external_pressure'])
+                                                tank['compressive_force'], tank['external_pressure'], tank['live_load'], tank['dead_load'])
         t = max(t1, t2)
     elif tank['outdoor'] and not tank['tensile_force']:
         t = operatingCompressiveForceThickness()
@@ -35,14 +35,23 @@ def calculateTank(tank):
         t = tensileForceThickness(tank['operating_moment'], tank['diameter'],
                                   tank['tensile_force_value'], tank['internal_pressure'])
     else:
-        t = idealThickness()
+        t = idealThickness(
+            tank['diameter'], tank['internal_pressure'], tank['hoop_tensile_modulus'])
 
 
-def idealThickness():
+def idealThickness(D, Pi, Eh):
     """
     Ideal thickness formula
+        used when none of the modifiers are selected
+
+    Parameters:
+        D = inside diameter
+        Pi = internal pressure
+        Eh = Hoop Tensile Modulus (one of the inputs)
+    Formula:
+        t = (PD)/(2*(0.001*Eh))
     """
-    return 0
+    return (Pi*D)/(2*(0.001*Eh))
 
 
 def tensileForceThickness(Ma, D, Fat, Pi):
@@ -63,7 +72,7 @@ def tensileForceThickness(Ma, D, Fat, Pi):
     return (Ma/(math.pi*((D/2)**2)*(Xt/10))) + (Fat/(math.pi*D*(Xt/10))) + ((Pi*D)/(4*(Xt/10)))
 
 
-def operatingCompressiveForceThickness(Ma, Mb, D, Fac, Fbc, Pe):
+def operatingCompressiveForceThickness(Ma, Mb, D, Fbc, Pe, liveLoad=0, deadLoad=0):
     """
     Compressive force will come from the snow/wind/siesmic loads in the other inputs.
     If there is a compressive force (Enter value in Newtons), 
@@ -85,6 +94,7 @@ def operatingCompressiveForceThickness(Ma, Mb, D, Fac, Fbc, Pe):
         t1 = ((Ma + Mb)/(PI()*((D/2)^2)*(Xt/10))) + ((Fac+Fbc)/(PI()*D*(Xt/10))) + ((Pe*D)/(4*(Xt/10)));
         t2 = ((((Ma + Mb)/(PI()*((D/2)^2))) + ((Fac+Fbc)/(PI()*D)) + ((Pe*D)/4)) * ((5*(D/2))/(0.3*((E2*E1)^(1/2)))))^(1/2);
     """
+    Fac = liveLoad + deadLoad
     t1 = ((Ma + Mb)/(math.pi*((D/2)**2)*(Xt/10))) + \
         ((Fac+Fbc)/(math.pi*D*(Xt/10))) + ((Pe*D)/(4*(Xt/10)))
     t2 = ((((Ma + Mb)/(math.pi*((D/2)**2))) + ((Fac+Fbc)/(math.pi*D)) +
