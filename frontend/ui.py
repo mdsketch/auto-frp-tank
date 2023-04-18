@@ -5,6 +5,8 @@ import io
 import os
 from connectors.solidworks import newDoc, closeDoc, createCylinder, setPreferences, openDoc, saveImage
 from connectors.excel import updateValues
+from connectors.data import saveSettings, loadSettings
+from connectors.formulas import calculateTank
 
 
 def get_img_data(f, maxsize=(800, 800), first=False):
@@ -26,7 +28,7 @@ def app():
 
     # ------ Menu Definition ------ #
     menu_def = [
-        ['&File', ['&Open     Ctrl-O', '&Save       Ctrl-S', '&Properties', 'E&xit']],
+        ['&File', ['&Open', '&Save', '&Properties', 'E&xit']],
         ['&Edit', ['&Paste', ['Special', 'Normal', ],
                    'Undo', 'Options::this_is_a_menu_key'], ],
         ['SolidWorks', ['Start SolidWorks', 'New Document',
@@ -48,29 +50,27 @@ def app():
     tank = [[sg.Text('Dimensions:', pad=(10, (10, 3)),
                      font=("Helvetica 12 underline"))],
             [sg.Text('Tank Internal Diameter (cm):', pad=(10, 3)), sg.Combo(
-                values=[i for i in range(300, 600, 50)], default_value=350, key='radius', size=(5, 20))],
+                values=[i for i in range(300, 600, 50)], default_value=350, key='diameter', size=(5, 20))],
             [sg.Text('Tank Height (cm):', pad=(10, 3)), sg.Combo(
                 values=[i for i in range(4000, 10000, 2000)], default_value=6000, key='height', size=(5, 20))],
             [sg.Text('Storage Type:', pad=(10, 3)), sg.Combo(
                 values=['Liquid', 'Gas'], default_value='Gas', key='storage_type', size=(10, 20), enable_events=True),
              sg.Text('Specific Gravity:', pad=(10, 3), key='specific_gravity_text'), sg.Combo(
                 values=[i for i in range(1, 10, 1)], default_value=1, key='specific_gravity', size=(5, 20), disabled=True)],
-            [sg.Text('Tensile Operating Force:', pad=(10, 3)), sg.Checkbox(
-                '', key='tensile_force', enable_events=True), sg.Spin(
-                values=[i for i in range(0, 15, 1)], initial_value=0, key='tensile_force_value', size=(5, 20), disabled=True)],
             [sg.Text('Ignore Corrosion Barrier:', pad=(10, 3)), sg.Checkbox(
                 '', key='corrosion', default=False)],
             [sg.Text('Internal Pressure (psi):', pad=(10, 3)), sg.Spin(
                 values=[i for i in range(0, 15, 1)], initial_value=0, key='internal_pressure', size=(5, 20))],
             [sg.Text('External Pressure (psi):', pad=(10, 3)), sg.Spin(
                 values=[i for i in range(0, 15, 1)], initial_value=0, key='external_pressure', size=(5, 20))],
-            [sg.Text('Save Tank As:', pad=(10, 3)), sg.Input(key='save_as',
-                                                             expand_x=True, default_text='auto_frp_tank.prtdot')]
             ]
 
     # Environment tab
-    environment = [[sg.Text('Compressive Operating Force:', pad=(10, 3)), sg.Spin(
-        values=[i for i in range(0, 15, 1)], initial_value=0, key='compressive_force', size=(5, 20))],
+    environment = [
+        [sg.Text('Is tank outside?', pad=(10, 3)),
+         sg.Checkbox('', key='outdoor', default=False, enable_events=True)],
+        [sg.Text('Compressive Operating Force:', pad=(10, 3)), sg.Spin(
+            values=[i for i in range(0, 15, 1)], initial_value=0, key='compressive_force', size=(5, 20), disabled=True)],
         [sg.Text('Snow Pressure:', pad=(10, 3)), sg.Checkbox(
             '', key='snow', default=False, enable_events=True),
          sg.Spin(
@@ -82,6 +82,11 @@ def app():
         [sg.Text('Seismic:', pad=(10, 3)), sg.Checkbox(
             '', key='seismic', default=False, enable_events=True), sg.Combo(
             values=['Ss', 'S1', 'Fa', 'Fv', 'TL'], default_value='Ss', key='seismic_type', size=(5, 20), disabled=True)],
+        [sg.Text('Tensile Operating Force:', pad=(10, 3)), sg.Checkbox(
+            '', key='tensile_force', enable_events=True), sg.Spin(
+            values=[i for i in range(0, 15, 1)], initial_value=0, key='tensile_force_value', size=(5, 20), disabled=True)],
+        [sg.Text('Operating Moment:', pad=(10, 3)), sg.Spin(
+            values=[i for i in range(0, 15, 1)], initial_value=0, key='operating_moment', size=(5, 20))],
     ]
 
     # Tank Type
@@ -136,8 +141,20 @@ def app():
                      'PySimpleGUI Version', sg.get_versions())
             window.reappear()
         elif event == 'Open':
-            filename = sg.popup_get_file('file to open', no_window=True)
-            print(filename)
+            filename = sg.popup_get_file(
+                'file to open', no_window=True)
+            settings = loadSettings(filename)
+            # update keys with settings
+            for key in settings:
+                window[key].update(settings[key])
+
+        elif event == 'Save':
+            filename = sg.popup_get_file(
+                'file to save', no_window=True, save_as=True)
+            # save settings remove -MENUBAR- and -TAB GROUP-
+            values.pop('-MENUBAR-')
+            values.pop('-TAB GROUP-')
+            saveSettings(filename, values)
         elif event == 'Start SolidWorks':
             print('Starting SolidWorks')
             os.popen('"C:/Program Files/SOLIDWORKS Corp/SOLIDWORKS/SLDWORKS.exe"')
@@ -146,11 +163,13 @@ def app():
         elif event == 'Close Document':
             closeDoc()
         elif event == 'Go':
-            # createCylinder(float(window.find_element('radius').get()), float(window.find_element('height').get()))
+            # calculate tank
+            tank = calculateTank(values)
+            # createCylinder(float(window.find_element('diameter').get()), float(window.find_element('height').get()))
             # update preferences to automatically use excel values
             previousPreference = setPreferences(2)
             # update excel values
-            updateValues(float(window.find_element('radius').get()), float(
+            updateValues(float(window.find_element('diameter').get()), float(
                 window.find_element('height').get()), 100, 100, 750, 400)
             # open part
             openDoc('C:/autofrp/Part1.SLDPRT')
@@ -170,42 +189,28 @@ def app():
             else:
                 window.find_element('specific_gravity').update(disabled=True)
         elif event == 'snow':
-            if values['snow']:
-                window.find_element('snow_pressure').update(disabled=False)
-            else:
-                window.find_element('snow_pressure').update(disabled=True)
+            window.find_element('snow_pressure').update(
+                disabled=not values['snow'])
         elif event == 'wind':
-            if values['wind']:
-                window.find_element('wind_speed').update(disabled=False)
-            else:
-                window.find_element('wind_speed').update(disabled=True)
+            window.find_element('wind_speed').update(
+                disabled=not values['wind'])
         elif event == 'seismic':
-            if values['seismic']:
-                window.find_element('seismic_type').update(disabled=False)
-            else:
-                window.find_element('seismic_type').update(disabled=True)
+            window.find_element('seismic_type').update(
+                disabled=not values['seismic'])
         elif event == 'tensile_force':
-            if values['tensile_force']:
-                window.find_element('tensile_force_value').update(
-                    disabled=False)
-            else:
-                window.find_element('tensile_force_value').update(
-                    disabled=True)
+            window.find_element('tensile_force_value').update(
+                disabled=not values['tensile_force'])
+            if not values['outdoor']:
+                window.find_element(
+                    'operating_moment').update(disabled=not values['tensile_force'])
         elif event == 'corrosion_barrier':
-            if values['corrosion_barrier']:
-                window.find_element('corrosion_barrier_thickness').update(
-                    disabled=True)
+            window.find_element('corrosion_barrier_thickness').update(
+                disabled=values['corrosion_barrier'])
+            window.find_element('corrosion_liner_thickness').update(
+                disabled=values['corrosion_barrier'])
+            if values['tank_type'] == 'FRP':
                 window.find_element('corrosion_liner_thickness').update(
                     disabled=True)
-            else:
-                window.find_element('corrosion_barrier_thickness').update(
-                    disabled=False)
-                if values['tank_type'] == 'Dual Laminate':
-                    window.find_element('corrosion_liner_thickness').update(
-                        disabled=False)
-                else:
-                    window.find_element('corrosion_liner_thickness').update(
-                        disabled=True)
         elif event == 'tank_type':
             if (not values['corrosion_barrier']):
                 if values['tank_type'] == 'Dual Laminate':
@@ -214,6 +219,14 @@ def app():
                 else:
                     window.find_element('corrosion_liner_thickness').update(
                         disabled=True)
+        elif event == 'outdoor':
+            elements = ['compressive_force',
+                        'snow_pressure', 'wind_speed', 'seismic_type', 'operating_moment']
+            if values['tensile_force']:
+                elements.remove('operating_moment')
+            for element in elements:
+                window.find_element(element).update(
+                    disabled=not values['outdoor'])
 
     window.close()
 
