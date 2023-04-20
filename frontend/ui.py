@@ -3,9 +3,10 @@ import PySimpleGUI as sg
 from PIL import Image, ImageTk
 import io
 import os
+import traceback
 from connectors.solidworks import newDoc, closeDoc, createCylinder, setPreferences, openDoc, saveImage
 from connectors.excel import updateValues
-from connectors.data import saveSettings, loadSettings
+from connectors.data import saveSettings, loadSettings, exportResults
 from connectors.formulas import calculateTank
 
 
@@ -47,21 +48,11 @@ def app():
         [[sg.Frame('Tank:', [[sg.Column([[image_elem]])]])]])
 
     # Main tank tab
-    tank = [
-        [sg.Text('Dimensions:', pad=(10, (10, 3)),
-                 font=("Helvetica 12 underline"))],
+    dimensions = [
         [sg.Text('Tank Internal Diameter (cm):', pad=(10, 3)),
             sg.Combo(values=[i for i in range(300, 600, 50)], default_value=350, key='diameter', size=(5, 20))],
         [sg.Text('Tank Height (cm):', pad=(10, 3)),
             sg.Combo(values=[i for i in range(4000, 10000, 2000)], default_value=6000, key='height', size=(5, 20))],
-        [sg.Text('Storage Type:', pad=(10, 3)),
-            sg.Combo(values=['Liquid', 'Gas'], default_value='Gas',
-                     key='storage_type', size=(10, 20), enable_events=True),
-            sg.Text('Specific Gravity:', pad=(10, 3),
-                    key='specific_gravity_text'),
-            sg.Combo(values=[i for i in range(1, 10, 1)], default_value=1, key='specific_gravity', size=(5, 20), disabled=True)],
-        [sg.Text('Ignore Corrosion Barrier:', pad=(10, 3)),
-            sg.Checkbox('', key='corrosion', default=False)],
         [sg.Text('Internal Pressure (psi):', pad=(10, 3)),
             sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='internal_pressure', size=(5, 20))],
         [sg.Text('External Pressure (psi):', pad=(10, 3)),
@@ -87,13 +78,19 @@ def app():
             sg.Checkbox('', key='tensile_force', enable_events=True),
             sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='tensile_force_value', size=(5, 20), disabled=True)],
         [sg.Text('Operating Moment:', pad=(10, 3)),
-            sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='operating_moment', size=(5, 20))],
+            sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='operating_moment', size=(5, 20), disabled=True)],
     ]
 
     # Tank Type
     tank_type = [
         [sg.Text('Tank Type:', pad=(10, 3)),
             sg.Combo(values=['FRP', 'Dual Laminate'], default_value='FRP', key='tank_type', size=(20, 20), enable_events=True)],
+        [sg.Text('Storage Type:', pad=(10, 3)),
+         sg.Combo(values=['Liquid', 'Gas'], default_value='Gas',
+                  key='storage_type', size=(10, 20), enable_events=True),
+         sg.Text('Specific Gravity:', pad=(10, 3),
+                 key='specific_gravity_text'),
+            sg.Combo(values=[i for i in range(1, 10, 1)], default_value=1, key='specific_gravity', size=(5, 20), disabled=True)],
         [sg.Text('Ignore Corrosion Barrier:', pad=(10, 3)),
             sg.Checkbox('', key='corrosion_barrier', default=True, enable_events=True)],
         [sg.Text('Corrosion Barrier Thickness (cm):', pad=(10, 3)),
@@ -127,12 +124,12 @@ def app():
     ]
 
     actions = sg.Column([[sg.Frame('Actions:',
-                                   [[sg.Column([[sg.Button('Go'), sg.Button('Clear'), sg.Button('Delete'), ]],
+                                   [[sg.Column([[sg.Button('Create Report'), sg.Button('Create Model'), sg.Button('Delete'), ]],
                                                pad=(0, 0))]])]], pad=(0, 0))
 
     layout = [
         [sg.Menu(menu_def, font='_ 12', key='-MENUBAR-')],
-        [[sg.TabGroup([[sg.Tab('Tank', tank), sg.Tab('Environment', environment), sg.Tab('Tank Type', tank_type),
+        [[sg.TabGroup([[sg.Tab('Dimensions', dimensions), sg.Tab('Environment', environment), sg.Tab('Tank Type', tank_type),
                         sg.Tab('Top Head', top_head), sg.Tab('Shell', shell),]],
                       key='-TAB GROUP-', expand_x=True, expand_y=True),]], [actions], [image]]
 
@@ -160,7 +157,8 @@ def app():
                 # update keys with settings
                 for key in settings:
                     window[key].update(settings[key])
-            except:
+            except Exception as e:
+                print(e)
                 sg.popup('Open Failed')
         elif event == 'Save':
             try:
@@ -170,23 +168,34 @@ def app():
                 values.pop('-MENUBAR-')
                 values.pop('-TAB GROUP-')
                 saveSettings(filename, values)
-            except:
+            except Exception as e:
+                print(e)
                 sg.popup('Save Failed')
         elif event == 'Start SolidWorks':
             try:
                 print('Starting SolidWorks')
                 os.popen(
                     '"C:/Program Files/SOLIDWORKS Corp/SOLIDWORKS/SLDWORKS.exe"')
-            except:
+            except Exception as e:
+                print(e)
                 sg.popup('SolidWorks Failed to Start')
         elif event == 'New Document':
             try:
                 newDoc()
-            except:
+            except Exception as e:
+                print(e)
                 sg.popup('New Document Failed')
         elif event == 'Close Document':
             closeDoc()
-        elif event == 'Go':
+        elif event == 'Create Report':
+            try:
+                # calculate tank
+                values['thickness'] = calculateTank(values)
+                exportResults("test.html", values)
+            except Exception as e:
+                print(traceback.format_exc())
+                sg.popup('Error', e)
+        elif event == 'Create Model':
             try:
                 # calculate tank
                 tank = calculateTank(values)
@@ -205,6 +214,7 @@ def app():
                 image_elem.update(data=get_img_data(
                     "C:/autofrp/doc1.png", first=False))
             except Exception as e:
+                print(e)
                 sg.popup('Error', e)
         elif event == 'Clear':
             try:
