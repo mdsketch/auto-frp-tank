@@ -211,10 +211,6 @@ def app():
                 openDoc('C:/autofrp/Part1.SLDPRT')
                 # revert to previous preference
                 setPreferences(previousPreference)
-                saveImage()
-                # set 'C:\\autofrp\\doc1.png' as image
-                image_elem.update(data=get_img_data(
-                    "C:/autofrp/doc1.png", first=False))
             except Exception as e:
                 print(e)
                 sg.popup('Error', e)
