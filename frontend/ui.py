@@ -9,6 +9,18 @@ from connectors.excel import updateValues
 from connectors.data import saveSettings, loadSettings, exportResults
 from connectors.formulas import calculateTank
 
+environmental_vars = {
+    'snow': {"name": "Snow Pressure",
+             "fields": ['Ce', 'Ct', 'Is', 'Pg'],
+             },
+    'wind': {"name": "Wind Pressure",
+             "fields":  ['q', 'qi', 'qh', 'G', 'Cp', 'GCpi'],
+             },
+    'seismic': {"name": "Seismic:",
+                "fields": ['Ss', 'S1', 'Fv', 'Fa', 'Tl'],
+                },
+}
+
 
 def get_img_data(f, maxsize=(800, 800), first=False):
     """Generate image data using PIL
@@ -48,55 +60,64 @@ def app():
         [[sg.Frame('Tank:', [[sg.Column([[image_elem]])]])]])
 
     # Main tank tab
-    dimensions = [
-        [sg.Text('Tank Internal Diameter (cm):', pad=(10, 3)),
-            sg.Combo(values=[i for i in range(300, 600, 50)], default_value=350, key='diameter', size=(5, 20))],
-        [sg.Text('Tank Height (cm):', pad=(10, 3)),
-            sg.Combo(values=[i for i in range(4000, 10000, 2000)], default_value=6000, key='height', size=(5, 20))],
+    features = [
+        [sg.Text('Tank Internal Diameter (in):', pad=(10, 3)),
+            sg.Spin(values=[i for i in range(0, 144, 1)], initial_value=36, key='diameter', size=(5, 20))],
+        [sg.Text('Tank Height (in):', pad=(10, 3)),
+            sg.Spin(values=[i for i in range(0, 10000, 1)], initial_value=76, key='height', size=(5, 20))],
         [sg.Text('Internal Pressure (psi):', pad=(10, 3)),
             sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='internal_pressure', size=(5, 20))],
         [sg.Text('External Pressure (psi):', pad=(10, 3)),
             sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='external_pressure', size=(5, 20))],
+        [sg.Text('Tank Type:', pad=(10, 3)),
+         sg.Combo(values=['FRP', 'Dual Laminate'], default_value='FRP', key='tank_type', size=(20, 20), enable_events=True)],
+        [sg.Text('Bottom Head Type:', pad=(10, 3)),
+            sg.Combo(values=['Torispherical', 'Conical', 'Hemispherical', 'Flat', 'Balsa Wood Core'], default_value='Flat', key='bottom_head', size=(20, 20))],
+        [sg.Text('Ignore Corrosion Barrier:', pad=(10, 3)),
+            sg.Checkbox('', key='corrosion_barrier', default=True, enable_events=True)],
+        [sg.Text('Corrosion Barrier Thickness (in):', pad=(10, 3)),
+            sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='corrosion_barrier_thickness', size=(5, 20), disabled=True)],
+        [sg.Text('Corrosion Liner Thickness (in):', pad=(10, 3)),
+            sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='corrosion_liner_thickness', size=(5, 20), disabled=True)],
     ]
 
     # Environment tab
     environment = [
+        [sg.Text('Tensile Operating Force (lbf):', pad=(10, 3)),
+            sg.Checkbox('', key='tensile_force', enable_events=True),
+            sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='tensile_force_value', size=(5, 40), disabled=True)],
+        [sg.Text('Operating Moment (in-lb):', pad=(10, 3)),
+            sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='operating_moment', size=(5, 40), disabled=True)],
         [sg.Text('Is tank outside?', pad=(10, 3)),
             sg.Checkbox('', key='outdoor', default=False, enable_events=True)],
-        [sg.Text('Compressive Operating Force:', pad=(10, 3)),
+        [sg.Text('Compressive Operating Force (in-lb):', pad=(10, 3)),
             sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='compressive_force', size=(5, 20), disabled=True)],
-        [sg.Text('Snow Pressure:', pad=(10, 3)),
-            sg.Checkbox('', key='snow', default=False, enable_events=True),
-            sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='snow_pressure', size=(5, 20), disabled=True)],
-        [sg.Text('Wind Speed:', pad=(10, 3)),
-            sg.Checkbox('', key='wind', default=False, enable_events=True),
-            sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='wind_speed', size=(5, 20), disabled=True)],
-        [sg.Text('Seismic:', pad=(10, 3)),
-            sg.Checkbox('', key='seismic', default=False, enable_events=True),
-            sg.Combo(values=['Ss', 'S1', 'Fa', 'Fv', 'TL'], default_value='Ss', key='seismic_type', size=(5, 20), disabled=True)],
-        [sg.Text('Tensile Operating Force:', pad=(10, 3)),
-            sg.Checkbox('', key='tensile_force', enable_events=True),
-            sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='tensile_force_value', size=(5, 20), disabled=True)],
-        [sg.Text('Operating Moment:', pad=(10, 3)),
-            sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='operating_moment', size=(5, 20), disabled=True)],
-    ]
 
-    # Tank Type
-    tank_type = [
-        [sg.Text('Tank Type:', pad=(10, 3)),
-            sg.Combo(values=['FRP', 'Dual Laminate'], default_value='FRP', key='tank_type', size=(20, 20), enable_events=True)],
+    ]
+    # dynamic environment
+    for key, value in environmental_vars.items():
+        spinners = []
+        # add fields and spinners
+        for field in value['fields']:
+            spinners.append(sg.Text(text=field, pad=(10, 3)))
+            spinners.append(sg.Spin(values=[i for i in range(
+                0, 15, 1)], initial_value=0, key=f'{key}_{field}', size=(5, 20), disabled=True))
+        # add to correct row in environment tab
+        environment.append([sg.Text(value['name'], pad=(10, 3)),
+                            sg.Checkbox('', key=key, default=False,
+                                        enable_events=True),
+                            *spinners])
+
+    # Tank contents tab
+    contents = [
         [sg.Text('Storage Type:', pad=(10, 3)),
          sg.Combo(values=['Liquid', 'Gas'], default_value='Gas',
                   key='storage_type', size=(10, 20), enable_events=True),
          sg.Text('Specific Gravity:', pad=(10, 3),
                  key='specific_gravity_text'),
-            sg.Combo(values=[i for i in range(1, 10, 1)], default_value=1, key='specific_gravity', size=(5, 20), disabled=True)],
-        [sg.Text('Ignore Corrosion Barrier:', pad=(10, 3)),
-            sg.Checkbox('', key='corrosion_barrier', default=True, enable_events=True)],
-        [sg.Text('Corrosion Barrier Thickness (cm):', pad=(10, 3)),
-            sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='corrosion_barrier_thickness', size=(5, 20), disabled=True)],
-        [sg.Text('Corrosion Liner Thickness (cm):', pad=(10, 3)),
-            sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='corrosion_liner_thickness', size=(5, 20), disabled=True)],
+            sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='specific_gravity', size=(5, 20), disabled=True)],
+        [sg.Text('Height of Liquid (in):', pad=(10, 3)),
+            sg.Spin(values=[i for i in range(0, 15, 1)], initial_value=0, key='liquid_height', size=(5, 20))],
     ]
 
     # Top Head
@@ -129,7 +150,7 @@ def app():
 
     layout = [
         [sg.Menu(menu_def, font='_ 12', key='-MENUBAR-')],
-        [[sg.TabGroup([[sg.Tab('Dimensions', dimensions), sg.Tab('Environment', environment), sg.Tab('Tank Type', tank_type),
+        [[sg.TabGroup([[sg.Tab('Features', features), sg.Tab('Environment', environment), sg.Tab('Contents', contents),
                         sg.Tab('Top Head', top_head), sg.Tab('Shell', shell),]],
                       key='-TAB GROUP-', expand_x=True, expand_y=True),]], [actions], [image]]
 
@@ -190,8 +211,7 @@ def app():
         elif event == 'Create Report':
             try:
                 # calculate tank
-                values['thickness'] = calculateTank(values)
-                exportResults("test.html", values)
+                exportResults("test.html", calculateTank(values))
             except Exception as e:
                 print(traceback.format_exc())
                 sg.popup('Error', e)
@@ -233,14 +253,17 @@ def app():
             else:
                 window.find_element('specific_gravity').update(disabled=True)
         elif event == 'snow':
-            window.find_element('snow_pressure').update(
-                disabled=not values['snow'])
+            for value in environmental_vars['snow']['fields']:
+                window.find_element(f'snow_{value}').update(
+                    disabled=not values['snow'])
         elif event == 'wind':
-            window.find_element('wind_speed').update(
-                disabled=not values['wind'])
+            for value in environmental_vars['wind']['fields']:
+                window.find_element(f'wind_{value}').update(
+                    disabled=not values['wind'])
         elif event == 'seismic':
-            window.find_element('seismic_type').update(
-                disabled=not values['seismic'])
+            for value in environmental_vars['seismic']['fields']:
+                window.find_element(f'seismic_{value}').update(
+                    disabled=not values['seismic'])
         elif event == 'tensile_force':
             window.find_element('tensile_force_value').update(
                 disabled=not values['tensile_force'])
@@ -255,6 +278,8 @@ def app():
             if values['tank_type'] == 'FRP':
                 window.find_element('corrosion_liner_thickness').update(
                     disabled=True)
+                window.find_element('corrosion_liner_thickness').update(
+                    value=0)
         elif event == 'tank_type':
             if (not values['corrosion_barrier']):
                 if values['tank_type'] == 'Dual Laminate':
@@ -263,17 +288,22 @@ def app():
                 else:
                     window.find_element('corrosion_liner_thickness').update(
                         disabled=True)
+                    window.find_element('corrosion_liner_thickness').update(
+                        value=0)
         elif event == 'outdoor':
-            elements = ['compressive_force',
-                        'snow_pressure', 'wind_speed', 'seismic_type', 'operating_moment']
+            elements = ['compressive_force', 'operating_moment']
             if values['tensile_force']:
                 elements.remove('operating_moment')
             for element in elements:
                 window.find_element(element).update(
                     disabled=not values['outdoor'])
-            boxes = ['snow', 'wind', 'seismic']
-            for box in boxes:
-                window.find_element(box).update(value=values['outdoor'])
+            # update all environmental fields as well
+            for env in environmental_vars:
+                window.find_element(env).update(value=values['outdoor'])
+                for value in environmental_vars[env]['fields']:
+                    window.find_element(f'{env}_{value}').update(
+                        disabled=not values['outdoor'])
+
     window.close()
 
 
