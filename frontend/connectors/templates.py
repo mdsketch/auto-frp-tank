@@ -1,3 +1,5 @@
+# TODO: have the template dynamically generated from the results dictionary
+# TODO: Create results dictionary
 TEMPLATE = """
 <html>
 
@@ -20,15 +22,16 @@ TEMPLATE = """
       width: 100%;
     }
 
-    th,
-    td {
-      border: 1px solid black;
-      padding: 5px;
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border: 1px solid #ddd;
     }
 
     th {
       background-color: #ddd;
       text-align: left;
+
     }
 
     .category {
@@ -44,10 +47,10 @@ TEMPLATE = """
   <table>
     <tr>
       <th>Thickness</th>
-      <td>{{ thickness }} cm</td>
+      <td>{{ thickness }} in</td>
     </tr>
   </table>
-  <div class="category">Dimensions</div>
+  <div class="category">Features</div>
   <table>
     <tr>
       <th>Parameter</th>
@@ -55,22 +58,12 @@ TEMPLATE = """
     </tr>
     <tr>
       <td>Diameter</td>
-      <td>{{ diameter }} cm</td>
+      <td>{{ diameter }} in</td>
     </tr>
     <tr>
       <td>Height</td>
-      <td>{{ height }} cm</td>
+      <td>{{ height }} in</td>
     </tr>
-    <tr>
-      <td>Storage Type</td>
-      <td>{{ storage_type }}</td>
-    </tr>
-    {% if storage_type == 'Liquid' %}
-    <tr>
-      <td>Specific Gravity</td>
-      <td>{{ specific_gravity }}</td>
-    </tr>
-    {% endif %}
     <tr>
       <td>Internal Pressure</td>
       <td>{{ internal_pressure }} psi</td>
@@ -79,6 +72,16 @@ TEMPLATE = """
       <td>External Pressure</td>
       <td>{{ external_pressure }} psi</td>
     </tr>
+    <tr>
+      <td>Tank Type</td>
+      <td>{{ tank_type }}</td>
+    </tr>
+    <tr>
+      <td>Bottom Head Type</td>
+      <td>{{ bottom_head_type }}</td>
+    </tr>
+    <tr>
+      <td>
   </table>
 
   <div class="category">Environment</div>
@@ -119,7 +122,7 @@ TEMPLATE = """
     {% endif %}
 
   </table>
-  <div class="category">Tank Type</div>
+  <div class="category">Tank Contents</div>
   <table>
     <tr>
       <th>Parameter</th>
@@ -130,23 +133,23 @@ TEMPLATE = """
       <td>{{ tank_type }}</td>
     </tr>
     <tr>
-      <td>Storage Type:</td>
+      <td>Storage Type</td>
       <td>{{ storage_type }}</td>
     </tr>
     {% if storage_type == 'Liquid' %}
     <tr>
-      <td>Specific Gravity:</td>
+      <td>Specific Gravity</td>
       <td>{{ specific_gravity }}</td>
     </tr>
     {% endif %}
     {% if corrosion %}
     <tr>
-      <td>Corrosion Barrier Thickness (cm):</td>
+      <td>Corrosion Barrier Thickness (in)</td>
       <td>{{ corrosion_barrier_thickness }}</td>
     </tr>
     {% if tank_type == 'Dual Laminate' %}
     <tr>
-      <td>Corrosion Liner Thickness (cm):</td>
+      <td>Corrosion Liner Thickness (in)</td>
       <td>{{ corrosion_liner_thickness }}</td>
     </tr>
     {% endif %}
@@ -163,12 +166,39 @@ TEMPLATE = """
       <td>{{ top_head }}</td>
     </tr>
     <tr>
-      <td>Live load (kN/m2):</td>
+      <td>Live load (kN/m2)</td>
       <td>{{ live_load }}</td>
     </tr>
     <tr>
-      <td>Dead load (kN/m2):</td>
+      <td>Dead load (kN/m2)</td>
       <td>{{ dead_load }}</td>
+    </tr>
+  </table>
+   <div class="category">Top Head</div>
+   <table>
+    <tr>
+      <th>Parameter</th>
+      <th>Value</th>
+    </tr>
+    <tr>
+      <td>Type:</td>
+      <td>{{ shell }}</td>
+    </tr>
+    <tr>
+      <td>Hoop Tensile Modulus (psi):</td>
+      <td>{{ hoop_tensile_modulus }}</td>
+    </tr>
+    <tr>
+      <td>Hoop Tensile Strength (psi):</td>
+      <td>{{ hoop_tensile_strength }}</td>
+    </tr>
+    <tr>
+      <td>Axial Tensile Modulus (psi):</td>
+      <td>{{ axial_tensile_modulus }}</td>
+    </tr>
+    <tr>
+      <td>Axial Tensile Strength (psi):</td>
+      <td>{{ axial_tensile_strength }}</td>
     </tr>
   </table>
 
