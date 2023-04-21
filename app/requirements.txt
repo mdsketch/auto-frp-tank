@@ -1,0 +1,6 @@
+PySimpleGUI
+Image
+pywin32
+openpyxl
+jinja2
+pyinstaller
