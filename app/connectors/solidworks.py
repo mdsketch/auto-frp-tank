@@ -22,7 +22,7 @@ def connect():
     return win32com.client.Dispatch("SldWorks.Application.{}".format(SWAV))
 
 
-def getStudy(t, p1, p2):
+def runStudy(t, p1, p2):
     """
     modify the study parameters
         Parameters:
@@ -62,6 +62,9 @@ def getStudy(t, p1, p2):
             y.PressureBeginEdit()
             y.Value = pressure.pop(0)
             y.PressureEndEdit
+    
+    # Run the study
+    Study.MeshAndRun()
 
 def newDoc():
     """

@@ -22,19 +22,6 @@ environmental_vars = {
 }
 
 
-def get_img_data(f, maxsize=(800, 800), first=False):
-    """Generate image data using PIL
-    """
-    img = Image.open(f)
-    img.thumbnail(maxsize)
-    if first:                     # tkinter is inactive the first time
-        bio = io.BytesIO()
-        img.save(bio, format="PNG")
-        del img
-        return bio.getvalue()
-    return ImageTk.PhotoImage(img)
-
-
 def app():
     sg.theme('LightGrey1')
     sg.set_options(element_padding=(0, 0))
@@ -52,12 +39,7 @@ def app():
     right_click_menu = ['Unused', [
         'Right', '!&Click', '&Menu', 'E&xit', 'Properties']]
 
-    image_elem = sg.Image(data=get_img_data(
-        "C:/autofrp/solidworx.jpg", first=True))
-
     # ------ GUI Defintion ------ #
-    image = sg.Column(
-        [[sg.Frame('Tank:', [[sg.Column([[image_elem]])]])]])
 
     # Main tank tab
     features = [
@@ -145,14 +127,14 @@ def app():
     ]
 
     actions = sg.Column([[sg.Frame('Actions:',
-                                   [[sg.Column([[sg.Button('Create Report'), sg.Button('Create Model'), sg.Button('Delete'), ]],
+                                   [[sg.Column([[sg.Button('Create Report'), sg.Button('Create Model'), sg.Button('Delete'), sg.Text('Tank Name:', pad=(10, 3)), sg.InputText(key='tank_name', size=(20, 20))]],
                                                pad=(0, 0))]])]], pad=(0, 0))
 
     layout = [
         [sg.Menu(menu_def, font='_ 12', key='-MENUBAR-')],
         [[sg.TabGroup([[sg.Tab('Features', features), sg.Tab('Environment', environment), sg.Tab('Contents', contents),
                         sg.Tab('Top Head', top_head), sg.Tab('Shell', shell),]],
-                      key='-TAB GROUP-', expand_x=True, expand_y=True),]], [actions], [image]]
+                      key='-TAB GROUP-', expand_x=True, expand_y=True),]], [actions]]
 
     window = sg.Window("Auto FRP Tank", layout, resizable=True,
                        right_click_menu=right_click_menu)
