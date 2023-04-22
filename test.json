@@ -2,7 +2,7 @@
     "diameter": 36,
     "height": 76,
     "internal_pressure": "15",
-    "external_pressure": 0,
+    "external_pressure": 5,
     "tank_type": "FRP",
     "bottom_head": "Flat",
     "corrosion_barrier": true,
@@ -42,5 +42,5 @@
     "hoop_tensile_strength": 0,
     "axial_tensile_modulus": 0,
     "axial_tensile_strength": 0,
-    "tank_name": ""
+    "tank_name": "Tank"
 }

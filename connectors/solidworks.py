@@ -106,7 +106,10 @@ def closeDoc():
     """
     swApp = connect()
     swDoc = swApp.ActiveDoc
-    swApp.CloseDoc(swDoc.GetTitle)
+    try:
+        swApp.CloseDoc(swDoc.GetTitle)
+    except:
+        pass
 
 
 def createCylinder(radius, height):

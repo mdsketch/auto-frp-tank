@@ -2,9 +2,11 @@
 import PySimpleGUI as sg
 from PIL import Image, ImageTk
 import io
+import shutil
+import time
 import os
 import traceback
-from connectors.solidworks import newDoc, closeDoc, createCylinder, setPreferences, openDoc, saveImage
+from connectors.solidworks import newDoc, closeDoc, createCylinder, setPreferences, openDoc, saveImage, runStudy
 from connectors.excel import updateValues
 from connectors.data import saveSettings, loadSettings, exportResults
 from connectors.formulas import calculateTank
@@ -127,7 +129,7 @@ def app():
     ]
 
     actions = sg.Column([[sg.Frame('Actions:',
-                                   [[sg.Column([[sg.Button('Create Report'), sg.Button('Create Model'), sg.Button('Delete'), sg.Text('Tank Name:', pad=(10, 3)), sg.InputText(key='tank_name', size=(20, 20))]],
+                                   [[sg.Column([[sg.Button('Create Report'), sg.Button('Create Model'), sg.Button('Run Simulation'), sg.Text('Tank Name:', pad=(10, 3)), sg.InputText(key='tank_name', size=(20, 20))]],
                                                pad=(0, 0))]])]], pad=(0, 0))
 
     layout = [
@@ -192,27 +194,59 @@ def app():
             closeDoc()
         elif event == 'Create Report':
             try:
+                if values['tank_name'] == '':
+                    filename = sg.popup_get_file(
+                        'file to save', no_window=True, save_as=True, file_types=(('HTML Files', '*.html'),))
+                    values['tank_name'] = filename.split('/')[-1].split('.')[0]
+                    window['tank_name'].update(values['tank_name'])
+                else:
+                    filename = f'{values["tank_name"]}.html'
                 # calculate tank
-                exportResults(
-                    f'{values["tank_name"]}.html', calculateTank(values))
+                exportResults(filename, calculateTank(values))
             except Exception as e:
                 print(traceback.format_exc())
                 sg.popup('Error', e)
         elif event == 'Create Model':
             try:
+                if values['tank_name'] == '':
+                    filename = sg.popup_get_file(
+                        'file to save', no_window=True, save_as=True, file_types=(('HTML Files', '*.html'),))
+                    values['tank_name'] = filename.split('/')[-1].split('.')[0]
+                    window['tank_name'].update(values['tank_name'])
+                else:
+                    filename = f'{values["tank_name"]}.html'
+                # calculate tank
+                exportResults(filename, calculateTank(values))
+                # close any open documents
+                closeDoc()
+                time.sleep(2)
                 # calculate tank
                 tank = calculateTank(values)
                 # createCylinder(float(window.find_element('diameter').get()), float(window.find_element('height').get()))
                 # update preferences to automatically use excel values
                 previousPreference = setPreferences(2)
                 # update excel values
-                updateValues(float(tank['height']), float(
-                    tank['diameter']) + float(tank['thickness']), float(tank['diameter']))
+                updateValues(25.4*float(tank['height']), 25.4*(float(
+                    tank['diameter']) + float(tank['thickness'])), 25.4*float(tank['diameter']))
+                file = f'{values["top_head"]}_Head_{"Wood" if values["bottom_head"] == "Balsa Wood Core" else values["bottom_head"]}_Bottom'
+                # Move file to exec directory
+                shutil.copy(
+                    f'C:/autofrp/models/{file}.SLDPRT', f'C:/autofrp/{file}.SLDPRT')
+                shutil.copy(
+                    f'C:/autofrp/models/{file}-Static 1.CWR', f'C:/autofrp/{file}-Static 1.CWR')
                 # open part
-                openDoc(
-                    f'C:/autofrp/{values["top_head"]}_Head_{"Wood" if values["bottom_head"] == "Balsa Wood Core" else values["bottom_head"]}_Bottom.SLDPRT')
+                openDoc(f'C:/autofrp/{file}.SLDPRT')
                 # revert to previous preference
                 setPreferences(previousPreference)
+            except Exception as e:
+                print(e)
+                sg.popup('Error', e)
+        elif event == 'Run Simulation':
+            try:
+                # calculate tank
+                tank = calculateTank(values)
+                runStudy(float(tank['thickness']), -1*float(tank['internal_pressure']),
+                         float(tank['external_pressure']))
             except Exception as e:
                 print(e)
                 sg.popup('Error', e)
