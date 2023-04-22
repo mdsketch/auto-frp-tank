@@ -193,7 +193,8 @@ def app():
         elif event == 'Create Report':
             try:
                 # calculate tank
-                exportResults("test.html", calculateTank(values))
+                exportResults(
+                    f'{values["tank_name"]}.html', calculateTank(values))
             except Exception as e:
                 print(traceback.format_exc())
                 sg.popup('Error', e)
@@ -205,10 +206,11 @@ def app():
                 # update preferences to automatically use excel values
                 previousPreference = setPreferences(2)
                 # update excel values
-                updateValues(float(window.find_element('diameter').get()), float(
-                    window.find_element('height').get()), 100, 100, 750, 400)
+                updateValues(float(tank['height']), float(
+                    tank['diameter']) + float(tank['thickness']), float(tank['diameter']))
                 # open part
-                openDoc('C:/autofrp/Part1.SLDPRT')
+                openDoc(
+                    f'C:/autofrp/{values["top_head"]}_Head_{"Wood" if values["bottom_head"] == "Balsa Wood Core" else values["bottom_head"]}_Bottom.SLDPRT')
                 # revert to previous preference
                 setPreferences(previousPreference)
             except Exception as e:

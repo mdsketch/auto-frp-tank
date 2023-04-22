@@ -25,8 +25,8 @@ def calculateTank(tank):
     """
     # TODO: dont change the actual value
     p = tank['internal_pressure']
-    tank['internal_pressure'] = tank['internal_pressure'] + \
-        tank['liquid_height']*tank['specific_gravity']
+    tank['internal_pressure'] = float(tank['internal_pressure']) + \
+        float(tank['liquid_height'])*float(tank['specific_gravity'])
     t = 0
     if tank['tensile_force'] and tank['outdoor']:
         t1 = tensileForceThickness(tank['operating_moment'], tank['diameter'],
@@ -66,9 +66,7 @@ def idealThickness(D=0.0, Pi=0.0, Eh=0.0):
     # check if we should use the default hoop tensile modulus
     if Eh == 0:
         Eh = E1
-    print(type(Pi))
-    print(D, Pi, Eh)
-    return ((float(Pi)*float(D))/(2*Xt), Eh)
+    return ((float(Pi)*float(D)*10)/(2*Xt), Eh)
 
 
 def tensileForceThickness(Ma=0.0, D=0.0, Fat=0.0, Pi=0.0):
