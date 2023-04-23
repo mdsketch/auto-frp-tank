@@ -1,5 +1,4 @@
 from openpyxl import load_workbook
-from openpyxl import Workbook
 
 def updateValues(height=0.0, outer=0.0, inner=0.0):
 

@@ -1,8 +1,5 @@
-import sys
-import asyncio
 import pythoncom
 import win32com.client
-import pathlib
 
 # Solidworks Version (write the year) :
 SWV = 2022
@@ -17,7 +14,7 @@ OPENDOC_ARG5 = win32com.client.VARIANT(pythoncom.VT_BYREF | pythoncom.VT_I4, 2)
 OPENDOC_ARG6 = win32com.client.VARIANT(
     pythoncom.VT_BYREF | pythoncom.VT_I4, 128)
 
-
+print(type(VARIANT_16387))
 def connect():
     return win32com.client.Dispatch("SldWorks.Application.{}".format(SWAV))
 
@@ -62,9 +59,10 @@ def runStudy(t, p1, p2):
             y.PressureBeginEdit()
             y.Value = pressure.pop(0)
             y.PressureEndEdit
-    
+
     # Run the study
     Study.MeshAndRun()
+
 
 def newDoc():
     """

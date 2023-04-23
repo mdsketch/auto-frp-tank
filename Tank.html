@@ -1,6 +1,4 @@
-# TODO: have the template dynamically generated from the results dictionary
-# TODO: Create results dictionary
-TEMPLATE = """
+
 <html>
 
 <head>
@@ -44,11 +42,11 @@ TEMPLATE = """
 </head>
 
 <body>
-  <h1>Tank Design Report - {{tank_name}}.html</h1>
+  <h1>Tank Design Report - Tank.html</h1>
   <table>
     <tr>
       <th>Thickness</th>
-      <td>{{ thickness }} in</td>
+      <td>0.13173434027570322 in</td>
     </tr>
   </table>
   <div class="category">Features</div>
@@ -59,40 +57,35 @@ TEMPLATE = """
     </tr>
     <tr>
       <td>Diameter</td>
-      <td>{{ diameter }} in</td>
+      <td>36 in</td>
     </tr>
     <tr>
       <td>Height</td>
-      <td>{{ height }} in</td>
+      <td>76 in</td>
     </tr>
     <tr>
       <td>Internal Pressure</td>
-      <td>{{ internal_pressure }} psi</td>
+      <td>15 psi</td>
     </tr>
     <tr>
       <td>External Pressure</td>
-      <td>{{ external_pressure }} psi</td>
+      <td>5 psi</td>
     </tr>
     <tr>
       <td>Tank Type</td>
-      <td>{{ tank_type }}</td>
+      <td>FRP</td>
     </tr>
     <tr>
       <td>Bottom Head Type</td>
-      <td>{{ bottom_head }}</td>
+      <td>Flat</td>
     </tr>
-    {% if corrosion_barrier %}
+    
     <tr>
       <td>Corrosion Barrier Thickness</td>
-      <td>{{ corrosion_barrier_thickness }} in</td>
+      <td>0 in</td>
     </tr>
-    {% if tank_type == 'Dual Laminate' %}
-    <tr>
-      <td>Corrosion Liner Thickness</td>
-      <td>{{ corrosion_liner_thickness }} in</td>
-    </tr>
-    {% endif %}
-    {% endif %}
+    
+    
     <tr>
   </table>
   
@@ -103,31 +96,22 @@ TEMPLATE = """
       <th>Parameter</th>
       <th>Value</th>
     </tr>
-    {% if not outdoor %}
-      <tr>
-        <td>Operating Indoors</td>
-        <td></td>
-    {% endif %}
-    {% if tensile_force %}
-    <tr>
-      <td>Tensile Operating Force</td>
-      <td>{{ tensile_force_value }} psi</td>
-    </tr>
-    {% endif %}
-    {% if tensile_force or outdoor %}
+    
+    
+    
     <tr>
       <td>Operating Moment</td>
-      <td>{{ operating_moment }} lb-ft</td>
+      <td>150 lb-ft</td>
     </tr>
-    {% endif %}
-    {% if outdoor %}
+    
+    
     <tr>
       <td>Compressive Operating Force</td>
-      <td>{{ compressive_force }} psi</td>
+      <td>150 psi</td>
     </tr>
     <tr>
       <td>Snow Pressure</td>
-      <td>{% if snow %}
+      <td>
       <table>
       <tr>
         <th>Parameter</th>
@@ -135,26 +119,26 @@ TEMPLATE = """
       </tr>
       <tr>
         <td>Ce</td>
-        <td>{{ snow_Ce }}</td>
+        <td>1</td>
       </tr>
       <tr>
         <td>Ct</td>
-        <td>{{ snow_Ct }}</td>
+        <td>1.1</td>
       </tr>
       <tr>
         <td>Is</td>
-        <td>{{ snow_Is }}</td>
+        <td>1.1</td>
       </tr>
       <tr>
         <td>Pg</td>
-        <td>{{ snow_Pg }}</td>
+        <td>109</td>
       </tr>
       </table>
-      {% else %}N\A{% endif %}</td>
+      </td>
     </tr>
     <tr>
       <td>Wind Speed</td>
-      <td>{% if wind %}
+      <td>
       <table>
       <tr>
         <th>Parameter</th>
@@ -162,34 +146,34 @@ TEMPLATE = """
       </tr>
       <tr>
         <td>q</td>
-        <td>{{ wind_q }}</td>
+        <td>50</td>
       </tr>
       <tr>
         <td>qi</td>
-        <td>{{ wind_qi }}</td>
+        <td>65</td>
       </tr>
       <tr>
         <td>qh</td>
-        <td>{{ wind_qh }}</td>
+        <td>47</td>
       </tr>
       <tr>
         <td>G</td>
-        <td>{{ wind_G }}</td>
+        <td>0.85</td>
       </tr>
       <tr>
         <td>Cp</td>
-        <td>{{ wind_Cp }}</td>
+        <td>0.7</td>
       </tr>
       <tr>
         <td>GCpi</td>
-        <td>{{ wind_GCpi }}</td>
+        <td>0.18</td>
       </tr>
       </table>
-      {% else %}N\A{% endif %}</td>
+      </td>
     </tr>
     <tr>
       <td>Seismic</td>
-      <td>{% if seismic %}
+      <td>
       <table>
       <tr>
         <th>Parameter</th>
@@ -197,28 +181,28 @@ TEMPLATE = """
       </tr>
       <tr>
         <td>Ss</td>
-        <td>{{ seismic_Ss }}</td>
+        <td>1.74</td>
       </tr>
       <tr>
         <td>S1</td>
-        <td>{{ seismic_S1 }}</td>
+        <td>0.6</td>
       </tr>
       <tr>
         <td>Fv</td>
-        <td>{{ seismic_Fv }}</td>
+        <td>1</td>
       </tr>
       <tr>
         <td>Fa</td>
-        <td>{{ seismic_Fa }}</td>
+        <td>1</td>
       </tr>
       <tr>
         <td>Tl</td>
-        <td>{{ seismic_Tl }}</td>
+        <td>1</td>
       </tr>
       </table>
-      {% else %}N\A{% endif %}</td>
+      </td>
     </tr>    
-    {% endif %}
+    
   </table>
 
   <div class="category">Tank Contents</div>
@@ -229,18 +213,18 @@ TEMPLATE = """
     </tr>
     <tr>
       <td>Tank Type:</td>
-      <td>{{ tank_type }}</td>
+      <td>FRP</td>
     </tr>
     <tr>
       <td>Storage Type</td>
-      <td>{{ storage_type }}</td>
+      <td>Liquid</td>
     </tr>
-    {% if storage_type == 'Liquid' %}
+    
     <tr>
       <td>Specific Gravity</td>
-      <td>{{ specific_gravity }}</td>
+      <td>1</td>
     </tr>
-    {% endif %}
+    
   </table>
 
   <div class="category">Top Head</div>
@@ -251,15 +235,15 @@ TEMPLATE = """
     </tr>
     <tr>
       <td>Type:</td>
-      <td>{{ top_head }}</td>
+      <td>Flat</td>
     </tr>
     <tr>
       <td>Live load</td>
-      <td>{{ live_load }} lbf</td>
+      <td>50 lbf</td>
     </tr>
     <tr>
       <td>Dead load</td>
-      <td>{{ dead_load }} lbf</td>
+      <td>0 lbf</td>
     </tr>
   </table>
    <div class="category">Top Head</div>
@@ -270,27 +254,26 @@ TEMPLATE = """
     </tr>
     <tr>
       <td>Type:</td>
-      <td>{{ shell }}</td>
+      <td>Hand Lay-Up</td>
     </tr>
     <tr>
       <td>Hoop Tensile Modulus:</td>
-      <td>{{ hoop_tensile_modulus }} psi</td>
+      <td>0 psi</td>
     </tr>
     <tr>
       <td>Hoop Tensile Strength</td>
-      <td>{{ hoop_tensile_strength }} psi</td>
+      <td>0 psi</td>
     </tr>
     <tr>
       <td>Axial Tensile Modulus</td>
-      <td>{{ axial_tensile_modulus }} psi</td>
+      <td>0 psi</td>
     </tr>
     <tr>
       <td>Axial Tensile Strength</td>
-      <td>{{ axial_tensile_strength }} psi</td>
+      <td>0 psi</td>
     </tr>
   </table>
 
 </body>
 
 </html>
-"""

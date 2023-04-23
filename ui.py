@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 import PySimpleGUI as sg
-from PIL import Image, ImageTk
-import io
 import shutil
 import time
 import os
@@ -30,9 +28,7 @@ def app():
 
     # ------ Menu Definition ------ #
     menu_def = [
-        ['&File', ['&Open', '&Save', '&Properties', 'E&xit']],
-        ['&Edit', ['&Paste', ['Special', 'Normal', ],
-                   'Undo', 'Options::this_is_a_menu_key'], ],
+        ['&File', ['&Open', '&Save', 'E&xit']],
         ['SolidWorks', ['Start SolidWorks', 'New Document',
                         'Close Document', 'Set Preferences']],
         ['&Help', ['&About...']]
