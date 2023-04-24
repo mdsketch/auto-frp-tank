@@ -1,5 +1,6 @@
 import pythoncom
 import win32com.client
+import math
 
 # Solidworks Version (write the year) :
 SWV = 2022
@@ -19,13 +20,13 @@ def connect():
     return win32com.client.Dispatch("SldWorks.Application.{}".format(SWAV))
 
 
-def runStudy(t, p1, p2):
+def runStudy(t, dt, p1, p2):
     """
     modify the study parameters
         Parameters:
             t (float) : thickness of the shell
             p1 (float) : internal pressure
-            p2 (float) : external pressure            
+            p2 (float) : external pressure
     """
     swApp = connect()
     CWObject = swApp.GetAddInObject("SldWorks.Simulation")
@@ -42,10 +43,30 @@ def runStudy(t, p1, p2):
     if (ShellMgr.ShellCount > 0):
         Shell = ShellMgr.GetShellAt(0, VARIANT_16387)
     # https://help.solidworks.com/2022/english/api/swsimulationapi/SolidWorks.Interop.cosworks~SolidWorks.Interop.cosworks.ICWShell_members.html
+    # Shell.ShellBeginEdit()
+    # Shell.ShellThickness = t
+    # error = Shell.ShellEndEdit
+    # https://help.solidworks.com/2022/english/api/swsimulationapi/SolidWorks.Interop.cosworks~SolidWorks.Interop.cosworks.ICWCompositeShellOptions_members.html#
     Shell.ShellBeginEdit()
-    Shell.ShellThickness = t
-    error = Shell.ShellEndEdit
-
+    Shell.Formulation = 2
+    Shell.ShellUnit = 3
+    Shell.ShellOffsetOption = 0
+    Shell.ShellOffsetValue = 0
+    CompositeOptions = Shell.CompositeOptions
+    CompositeOptions.Symmetric2 = -1
+    CompositeOptions.Sandwich = 0
+    CompositeOptions.MappingType = 0
+    CompositeOptions.RotateZeroDegreeReference2 = 0
+    CompositeOptions.PlyRelativeAngle2 = 0
+    CompositeOptions.LengthUnit = 3
+    CompositeOptions.AllPliesSameMaterial2 = -1
+    totalPlies = math.ceil(float(t)/float(dt))
+    CompositeOptions.SetTotalPlies(totalPlies)
+    for ply in range(1, totalPlies+1):
+        # Alternate between 45 and -45 degrees
+        CompositeOptions.SetPlyParameters2(
+            ply, dt, 45 if ply % 2 == 0 else -45, "", "E-Glass/Epoxy")
+    Shell.ShellEndEdit
     pressure = [p1, p2]
     # Modify the pressure
     # https://help.solidworks.com/2022/english/api/swsimulationapi/SolidWorks.Interop.cosworks~SolidWorks.Interop.cosworks.ICWLoadsAndRestraintsManager_members.html
@@ -62,6 +83,9 @@ def runStudy(t, p1, p2):
 
     # Run the study
     Study.MeshAndRun()
+
+
+runStudy(20, 1, -5, 15)
 
 
 def newDoc():
