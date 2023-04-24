@@ -14,7 +14,7 @@ OPENDOC_ARG5 = win32com.client.VARIANT(pythoncom.VT_BYREF | pythoncom.VT_I4, 2)
 OPENDOC_ARG6 = win32com.client.VARIANT(
     pythoncom.VT_BYREF | pythoncom.VT_I4, 128)
 
-print(type(VARIANT_16387))
+
 def connect():
     return win32com.client.Dispatch("SldWorks.Application.{}".format(SWAV))
 
