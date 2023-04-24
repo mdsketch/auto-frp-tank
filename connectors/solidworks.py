@@ -27,6 +27,7 @@ def runStudy(t, dt, p1, p2):
             t (float) : thickness of the shell
             p1 (float) : internal pressure
             p2 (float) : external pressure
+            dt (float) : thickness of each ply
     """
     swApp = connect()
     CWObject = swApp.GetAddInObject("SldWorks.Simulation")
@@ -83,10 +84,6 @@ def runStudy(t, dt, p1, p2):
 
     # Run the study
     Study.MeshAndRun()
-
-
-runStudy(20, 1, -5, 15)
-
 
 def newDoc():
     """

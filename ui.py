@@ -114,6 +114,8 @@ def app():
     shell = [
         [sg.Text('Type:', pad=(10, 3)),
             sg.Combo(values=['Hand Lay-Up', 'Filament Wound'], default_value='Hand Lay-Up', key='shell', size=(20, 20))],
+        [sg.Text('Thickness per Ply (in):', pad=(10, 3)),
+            sg.Spin(values=[i for i in range(0, 100, 1)], initial_value=0, key='thickness_per_ply', size=(5, 20))],
         [sg.Text('Hoop Tensile Modulus (psi):', pad=(10, 3)),
             sg.Spin(values=[i for i in range(0, 100, 1)], initial_value=0, key='hoop_tensile_modulus', size=(5, 20))],
         [sg.Text('Hoop Tensile Strength (psi):', pad=(10, 3)),
@@ -167,6 +169,9 @@ def app():
                     'file to save', no_window=True, save_as=True)
                 # save settings remove -MENUBAR- and -TAB GROUP-
                 values.pop('-MENUBAR-')
+                # if values['thickness'] exists, remove it from values
+                if 'thickness' in values:
+                    values.pop('thickness')
                 values.pop('-TAB GROUP-')
                 saveSettings(filename, values)
             except Exception as e:
@@ -241,7 +246,7 @@ def app():
             try:
                 # calculate tank
                 tank = calculateTank(values)
-                runStudy(float(tank['thickness']), -1*float(tank['internal_pressure']),
+                runStudy(float(tank['thickness']), float(tank['thickness_per_ply']), -1*float(tank['internal_pressure']),
                          float(tank['external_pressure']))
             except Exception as e:
                 print(e)
