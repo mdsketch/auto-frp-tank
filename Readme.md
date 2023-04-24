@@ -27,4 +27,4 @@ Install to `C:\autofrp` by unzipping the release zip file.
 5. Unzip `development/models.zip` to `C:\autofrp\models`
 6. Copy `development/123.xlsx` to `C:\autofrp\123.xlsx`
 7. run `ui.py` to start the program.
-
+8. Run `make build` to build the program for windows. The executable will be in `dist/autofrptank.exe`
