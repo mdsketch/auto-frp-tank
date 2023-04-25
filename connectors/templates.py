@@ -262,7 +262,7 @@ TEMPLATE = """
       <td>{{ dead_load }} lbf</td>
     </tr>
   </table>
-   <div class="category">Top Head</div>
+   <div class="category">Shell</div>
    <table>
     <tr>
       <th>Parameter</th>
@@ -273,7 +273,7 @@ TEMPLATE = """
       <td>{{ shell }}</td>
     </tr>
     <tr>
-      <td>Hoop Tensile Modulus:</td>
+      <td>Hoop Tensile Modulus</td>
       <td>{{ hoop_tensile_modulus }} psi</td>
     </tr>
     <tr>
@@ -289,7 +289,29 @@ TEMPLATE = """
       <td>{{ axial_tensile_strength }} psi</td>
     </tr>
   </table>
-
+  <div class="category">Nozzle</div>
+  <table>
+    <tr>
+      <th>Parameter</th>
+      <th>Value</th>
+    </tr>
+    <tr>
+      <td>Number of Nozzles</td>
+      <td>{{ nozzles }}</td>
+    </tr>
+    <tr>
+      <td>Length of Nozzle</td>
+      <td>{{ nozzle_length }} in</td>
+    </tr>
+    <tr>
+      <td>Thickness of Nozzle</td>
+      <td>{{ nozzle_thickness }} in</td>
+    </tr>
+    <tr>
+      <td>Diameter of Nozzle</td>
+      <td>{{ nozzle_diameter }} in</td>
+    </tr>
+  </table>
 </body>
 
 </html>

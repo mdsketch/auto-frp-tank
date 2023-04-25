@@ -14,6 +14,7 @@ Yt = 5.700E+003  # Tensile Strength (psi)
 Yc = 1.860E+004  # Compressive Strength (psi)
 S = 1.290E+004  # Shear Strength (psi)
 g = 9.81  # Gravity (m/s^2)
+dEglass = 158.6  # Density of E-Glass (lb/ft^3)
 
 
 def calculateTank(tank):
@@ -29,26 +30,24 @@ def calculateTank(tank):
         float(tank['liquid_height'])*float(tank['specific_gravity'])
     t = 0
     if tank['tensile_force'] and tank['outdoor']:
-        t1 = tensileForceThickness(tank['operating_moment'], tank['diameter'],
-                                   tank['tensile_force_value'], tank['internal_pressure'])
+        t1 = tensileForceThickness(
+            tank['operating_moment'], tank['diameter'], tank['tensile_force_value'])
         t2 = operatingCompressiveForceThickness(tank)
         t = max(t1, t2)
     elif tank['outdoor'] and not tank['tensile_force']:
         t = operatingCompressiveForceThickness(tank)
     elif tank['tensile_force'] and not tank['outdoor']:
-        t = tensileForceThickness(tank['operating_moment'], tank['diameter'],
-                                  tank['tensile_force_value'], tank['internal_pressure'])
-    else:
-        t, Eh = idealThickness(
-            tank['diameter'], tank['internal_pressure'], tank['hoop_tensile_modulus'])
-        tank['hoop_tensile_modulus'] = Eh
+        t = tensileForceThickness(
+            tank['operating_moment'], tank['diameter'], tank['tensile_force_value'])
+
+    t += idealThickness(tank['diameter'], tank['internal_pressure'])
     tank['internal_pressure'] = p
     tank['thickness'] = t + tank['corrosion_barrier_thickness'] + \
         tank['corrosion_liner_thickness']
     return tank
 
 
-def idealThickness(D=0.0, Pi=0.0, Eh=0.0):
+def idealThickness(D=0.0, Pi=0.0):
     """
     Ideal thickness formula
         used when none of the modifiers are selected
@@ -61,15 +60,12 @@ def idealThickness(D=0.0, Pi=0.0, Eh=0.0):
         t = (PD)/(2*(0.001*Eh))
     Returns:
         t = thickness
-        Eh = hoop tensile modulus
     """
     # check if we should use the default hoop tensile modulus
-    if Eh == 0:
-        Eh = E1
-    return ((float(Pi)*float(D)*10)/(2*Xt), Eh)
+    return (float(Pi)*float(D)*10)/(2*Xt)
 
 
-def tensileForceThickness(Ma=0.0, D=0.0, Fat=0.0, Pi=0.0):
+def tensileForceThickness(Ma=0.0, D=0.0, Fat=0.0):
     """
     Thickness formula when accounting for tensile force
 
@@ -77,13 +73,12 @@ def tensileForceThickness(Ma=0.0, D=0.0, Fat=0.0, Pi=0.0):
         Ma = Bending moment from operating loads
         D = inside diameter
         Fat = Axial Tensile force 
-        Pi = internal pressure (probably 15)
         10 is design factor
 
     Formula:
-        t = ((Ma*8.8507457916)/(PI()*((D/2)^2)*(Xt/10))) + ((Fat*0.2248089431)/(PI()*D*(Xt/10))) + ((P*D)/(4*(Xt/10)));
+        t = ((Ma*8.8507457916)/(PI()*((D/2)^2)*(Xt/10))) + ((Fat*0.2248089431)/(PI()*D*(Xt/10)))
     """
-    return ((float(Ma))/(math.pi*((float(D)/2)**2)*(Xt/10))) + ((float(Fat))/(math.pi*float(D)*(Xt/10))) + ((float(Pi)*float(D))/(4*(Xt/10)))
+    return ((float(Ma))/(math.pi*((float(D)/2)**2)*(Xt/10))) + ((float(Fat))/(math.pi*float(D)*(Xt/10)))
 
 
 def operatingCompressiveForceThickness(tank):
@@ -122,12 +117,14 @@ def operatingCompressiveForceThickness(tank):
         t2 = (((((Ma) + Mb)/(PI()*((D/2)^2))) + (((Fac)+Fbc)/(PI()*D)) + ((Pe*D)/4)) * ((5*(D/2))/(0.3*((E2*E1)^(1/2)))))^(1/2);
     """
     # get values
+    nozzle = (2.0*math.pi*(float(tank['diameter'])/24.0)*(float(
+        tank['nozzle_length'])/12.0)*(float(tank['nozzle_thickness'])/12.0))*dEglass
     Ma = float(tank['operating_moment'])
     D = float(tank['diameter'])
     Fac = float(tank['compressive_force'])
     Pe = float(tank['external_pressure'])
     height = float(tank['height'])
-    deadLoad = float(tank['dead_load'])
+    deadLoad = float(tank['dead_load']) + nozzle
     liveLoad = float(tank['live_load'])
     Ce = float(tank['snow_Ce'])
     Ct = float(tank['snow_Ct'])

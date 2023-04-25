@@ -110,6 +110,18 @@ def app():
             sg.Spin(values=[i for i in range(0, 100, 1)], initial_value=0, key='dead_load', size=(5, 20))],
     ]
 
+    # Nozzle
+    nozzle = [
+        [sg.Text('Number of Nozzles:', pad=(10, 3)),
+            sg.Spin(values=[i for i in range(0, 100, 1)], initial_value=0, key='nozzles', size=(5, 20))],
+        [sg.Text('Length of Nozzle (in):', pad=(10, 3)),
+            sg.Spin(values=[i for i in range(0, 100, 1)], initial_value=0, key='nozzle_length', size=(5, 20))],
+        [sg.Text('Thickness of Nozzle (in):', pad=(10, 3)),
+            sg.Spin(values=[i for i in range(0, 100, 1)], initial_value=0, key='nozzle_thickness', size=(5, 20))],
+        [sg.Text('Diameter of Nozzle (in):', pad=(10, 3)),
+            sg.Spin(values=[i for i in range(0, 100, 1)], initial_value=0, key='nozzle_diameter', size=(5, 20))],
+    ]
+
     # Shell
     shell = [
         [sg.Text('Type:', pad=(10, 3)),
@@ -133,7 +145,8 @@ def app():
     layout = [
         [sg.Menu(menu_def, font='_ 12', key='-MENUBAR-')],
         [[sg.TabGroup([[sg.Tab('Features', features), sg.Tab('Environment', environment), sg.Tab('Contents', contents),
-                        sg.Tab('Top Head', top_head), sg.Tab('Shell', shell),]],
+                        sg.Tab('Top Head', top_head), sg.Tab('Shell', shell),
+                        sg.Tab('Nozzle', nozzle)]],
                       key='-TAB GROUP-', expand_x=True, expand_y=True),]], [actions]]
 
     window = sg.Window("Auto FRP Tank", layout, resizable=True,
